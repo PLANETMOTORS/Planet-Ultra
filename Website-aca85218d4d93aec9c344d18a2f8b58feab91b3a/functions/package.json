@@ -1,0 +1,22 @@
+{
+  "name": "planet-motors-functions",
+  "description": "Planet Motors Firebase Cloud Functions",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "deploy": "firebase deploy --only functions",
+    "test": "echo \"No automated tests — deploy with: npm run deploy\" && exit 0",
+    "build": "echo \"No build step required for Cloud Functions\" && exit 0"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^4.6.0"
+  },
+  "overrides": {
+    "@tootallnate/once": "^3.0.1"
+  }
+}

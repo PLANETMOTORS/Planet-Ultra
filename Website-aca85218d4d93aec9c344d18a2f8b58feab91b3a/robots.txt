@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://www.planetmotors.app/sitemap-index.xml
+
+# Block utility/admin paths
+Disallow: /functions/
+Disallow: /.git/

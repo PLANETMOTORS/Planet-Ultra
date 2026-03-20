@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users can only read/write their own profile
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Saved vehicles — owner only
+    match /savedVehicles/{docId} {
+      allow read, delete: if request.auth != null
+        && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.userId;
+    }
+
+    // Price alerts — owner only
+    match /priceAlerts/{docId} {
+      allow read, delete: if request.auth != null
+        && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.userId;
+    }
+
+    // Contact form — write-only for anyone
+    match /contacts/{docId} {
+      allow create: if true;
+    }
+
+    // Sell / trade-in form — write-only for anyone
+    match /sellRequests/{docId} {
+      allow create: if true;
+    }
+
+    // Finance leads — write-only for anyone
+    match /leads/{docId} {
+      allow create: if true;
+    }
+
+    // Reservations — anyone can create; owner can read
+    match /reservations/{docId} {
+      allow create: if true;
+      allow read: if request.auth != null
+        && request.auth.uid == resource.data.userId;
+    }
+  }
+}

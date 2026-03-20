@@ -1,0 +1,39 @@
+{
+  "redirects": [
+    { "source": "/inventory", "destination": "/inventory/used/", "permanent": true },
+    { "source": "/inventory/", "destination": "/inventory/used/", "permanent": true },
+    { "source": "/Inventory/:path*", "destination": "/inventory/:path*", "permanent": true },
+    { "source": "/INVENTORY/:path*", "destination": "/inventory/:path*", "permanent": true },
+    { "source": "/inventory/used", "destination": "/inventory/used/", "permanent": true },
+    { "source": "/vehicles/:path*", "destination": "/inventory/used/", "permanent": true },
+    { "source": "/cars/:path*", "destination": "/inventory/used/", "permanent": true },
+    { "source": "/used-cars/:path*", "destination": "/inventory/used/", "permanent": true },
+    { "source": "/sell-my-car", "destination": "/sell/", "permanent": true },
+    { "source": "/sell-my-car/", "destination": "/sell/", "permanent": true },
+    { "source": "/sell-car", "destination": "/sell/", "permanent": true },
+    { "source": "/trade", "destination": "/sell/", "permanent": true },
+    { "source": "/trade-in", "destination": "/sell/", "permanent": true },
+    { "source": "/financing", "destination": "/finance/", "permanent": true },
+    { "source": "/apply", "destination": "/finance/", "permanent": true },
+    { "source": "/about-us", "destination": "/about/", "permanent": true },
+    { "source": "/about-us/", "destination": "/about/", "permanent": true },
+    { "source": "/contact-us", "destination": "/contact/", "permanent": true },
+    { "source": "/contact-us/", "destination": "/contact/", "permanent": true },
+    { "source": "/faq/", "destination": "/faq/", "permanent": false },
+    { "source": "/frequently-asked-questions", "destination": "/faq/", "permanent": true },
+    { "source": "/warranty", "destination": "/protection/", "permanent": true },
+    { "source": "/extended-warranty", "destination": "/protection/", "permanent": true }
+  ],
+  "rewrites": [
+    { "source": "/:path*", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" }
+      ]
+    }
+  ]
+}

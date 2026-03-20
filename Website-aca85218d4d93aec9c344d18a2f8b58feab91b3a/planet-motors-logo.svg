@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 380" role="img" aria-label="Planet Motors - Fairness Integrity">
+  <!-- Left Wing -->
+  <path fill="#223c79" d="M 180,145 C 155,130 120,110 85,95 C 60,85 30,80 5,82
+    C 25,90 50,100 68,115 C 45,112 20,115 5,125
+    C 30,128 58,132 75,145 C 52,144 28,148 12,160
+    C 38,160 65,162 80,172 C 58,173 35,178 20,192
+    C 46,188 72,186 88,193 C 68,200 48,210 38,225
+    C 62,215 88,207 105,210 C 90,220 75,235 70,250
+    C 92,235 115,222 132,222
+    L 150,195 C 140,185 168,170 180,160 Z"/>
+
+  <!-- Left Wing stripe lines -->
+  <path fill="#223c79" opacity="0.0" d="M0,0"/>
+  <line x1="55" y1="97" x2="108" y2="152" stroke="#1a2f60" stroke-width="5" opacity="0.5"/>
+  <line x1="35" y1="112" x2="88" y2="165" stroke="#1a2f60" stroke-width="4" opacity="0.4"/>
+  <line x1="18" y1="130" x2="68" y2="180" stroke="#1a2f60" stroke-width="3.5" opacity="0.4"/>
+
+  <!-- Right Wing -->
+  <path fill="#223c79" d="M 420,145 C 445,130 480,110 515,95 C 540,85 570,80 595,82
+    C 575,90 550,100 532,115 C 555,112 580,115 595,125
+    C 570,128 542,132 525,145 C 548,144 572,148 588,160
+    C 562,160 535,162 520,172 C 542,173 565,178 580,192
+    C 554,188 528,186 512,193 C 532,200 552,210 562,225
+    C 538,215 512,207 495,210 C 510,220 525,235 530,250
+    C 508,235 485,222 468,222
+    L 450,195 C 460,185 432,170 420,160 Z"/>
+
+  <!-- Right Wing stripe lines -->
+  <line x1="545" y1="97" x2="492" y2="152" stroke="#1a2f60" stroke-width="5" opacity="0.5"/>
+  <line x1="565" y1="112" x2="512" y2="165" stroke="#1a2f60" stroke-width="4" opacity="0.4"/>
+  <line x1="582" y1="130" x2="532" y2="180" stroke="#1a2f60" stroke-width="3.5" opacity="0.4"/>
+
+  <!-- Outer Shield body (blue) -->
+  <path fill="#223c79" d="M 300,22 L 380,48 L 388,55 L 390,180
+    C 390,240 300,370 300,370
+    C 300,370 210,240 210,180 L 212,55 L 220,48 Z"/>
+
+  <!-- Hexagonal inner frame at top of shield -->
+  <path fill="none" stroke="#223c79" stroke-width="8"
+    d="M 300,32 L 365,55 L 380,75 L 380,130 L 300,148 L 220,130 L 220,75 L 235,55 Z"/>
+
+  <!-- Inner shield white fill (main content area) -->
+  <path fill="#ffffff" d="M 300,48 L 355,68 L 368,84 L 368,200
+    C 355,240 300,355 300,355
+    C 300,355 232,240 232,200 L 232,84 L 245,68 Z"/>
+
+  <!-- Blue bottom section of inner shield (for FAIRNESS INTEGRITY) -->
+  <path fill="#223c79" d="M 232,240 C 232,240 266,340 300,355
+    C 334,340 368,240 368,240 Z"/>
+
+  <!-- Stars arc (9 stars) -->
+  <!-- Star positions in arc above hexagon -->
+  <g fill="#223c79">
+    <!-- Left stars -->
+    <polygon points="210,50 213,60 223,60 215,66 218,76 210,70 202,76 205,66 197,60 207,60" transform="scale(0.55) translate(168,25)"/>
+    <polygon points="225,35 228,45 238,45 230,51 233,61 225,55 217,61 220,51 212,45 222,45" transform="scale(0.55) translate(168,25)"/>
+    <polygon points="242,25 245,35 255,35 247,41 250,51 242,45 234,51 237,41 229,35 239,35" transform="scale(0.55) translate(168,25)"/>
+    <polygon points="260,20 263,30 273,30 265,36 268,46 260,40 252,46 255,36 247,30 257,30" transform="scale(0.55) translate(168,25)"/>
+    <!-- Top star -->
+    <polygon points="300,15 303,25 313,25 305,31 308,41 300,35 292,41 295,31 287,25 297,25" transform="scale(0.6) translate(0,5)"/>
+    <!-- Right stars -->
+    <polygon points="340,20 343,30 353,30 345,36 348,46 340,40 332,46 335,36 327,30 337,30" transform="scale(0.55) translate(-168,25)"/>
+    <polygon points="358,25 361,35 371,35 363,41 366,51 358,45 350,51 353,41 345,35 355,35" transform="scale(0.55) translate(-168,25)"/>
+    <polygon points="375,35 378,45 388,45 380,51 383,61 375,55 367,61 370,51 362,45 372,45" transform="scale(0.55) translate(-168,25)"/>
+    <polygon points="390,50 393,60 403,60 395,66 398,76 390,70 382,76 385,66 377,60 387,60" transform="scale(0.55) translate(-168,25)"/>
+  </g>
+
+  <!-- Car Key icon (at top of inner shield) -->
+  <g fill="#223c79" transform="translate(268, 68)">
+    <!-- Key ring (circle) -->
+    <circle cx="10" cy="10" r="8" fill="none" stroke="#223c79" stroke-width="3.5"/>
+    <circle cx="10" cy="10" r="3.5" fill="#223c79"/>
+    <!-- Key shaft -->
+    <rect x="17" y="8.5" width="30" height="3.5" rx="1.5" fill="#223c79"/>
+    <!-- Key teeth -->
+    <rect x="40" y="12" width="4" height="6" rx="1" fill="#223c79"/>
+    <rect x="32" y="12" width="4" height="4.5" rx="1" fill="#223c79"/>
+  </g>
+
+  <!-- White horizontal banner over the middle of shield -->
+  <rect x="195" y="148" width="210" height="110" rx="5" fill="#ffffff"/>
+
+  <!-- PLANET text (red, large bold italic) -->
+  <text x="300" y="197"
+    font-family="Impact, 'Arial Black', 'Franklin Gothic Heavy', sans-serif"
+    font-size="58" font-weight="900" font-style="italic"
+    fill="#d02126" text-anchor="middle" letter-spacing="1">PLANET</text>
+
+  <!-- MOTORS text (blue, large bold italic) -->
+  <text x="300" y="248"
+    font-family="Impact, 'Arial Black', 'Franklin Gothic Heavy', sans-serif"
+    font-size="52" font-weight="900" font-style="italic"
+    fill="#223c79" text-anchor="middle" letter-spacing="1">MOTORS</text>
+
+  <!-- FAIRNESS text (white, at bottom of shield) -->
+  <text x="300" y="298"
+    font-family="'Times New Roman', Georgia, serif"
+    font-size="20" font-weight="700"
+    fill="#ffffff" text-anchor="middle" letter-spacing="3">FAIRNESS</text>
+
+  <!-- INTEGRITY text (white, at bottom of shield) -->
+  <text x="300" y="322"
+    font-family="'Times New Roman', Georgia, serif"
+    font-size="20" font-weight="700"
+    fill="#ffffff" text-anchor="middle" letter-spacing="3">INTEGRITY</text>
+</svg>
