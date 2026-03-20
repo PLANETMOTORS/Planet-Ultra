@@ -18,16 +18,37 @@ export interface Vehicle {
   slug: string;
   vin: string;
   stockNumber: string;
+
   year: number;
   make: string;
   model: string;
   trim?: string;
+
+  bodyStyle?: string;
+  drivetrain?: string;
+  fuelType?: string;
+  transmission?: string;
+
   mileageKm: number;
+
+  exteriorColor?: string;
+  interiorColor?: string;
+
   priceCad: number;
+  salePriceCad?: number;
+
   status: VehicleStatus;
+
+  isFeatured?: boolean;
+  isCertified?: boolean;
+
   heroImage: VehicleImage;
-  gallery: VehicleImage[];
-  media360?: Vehicle360Asset[];
+  galleryImages?: VehicleImage[];
+  hero360Asset?: Vehicle360Asset;
+
   seoTitle?: string;
   seoDescription?: string;
+
+  createdAt?: string;
+  updatedAt?: string;
 }
