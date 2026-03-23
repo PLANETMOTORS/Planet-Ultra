@@ -46,6 +46,11 @@ export interface Vehicle {
   galleryImages?: VehicleImage[];
   hero360Asset?: Vehicle360Asset;
 
+  description?: string;
+  featureBullets?: string[];
+  packages?: string[];
+  options?: string[];
+
   seoTitle?: string;
   seoDescription?: string;
 
