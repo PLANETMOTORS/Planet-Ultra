@@ -4,15 +4,19 @@ import type { Vehicle } from '@/types/vehicle';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://planetmotors.ca';
 
 export function buildVehicleMetadata(vehicle: Vehicle): Metadata {
+  const titleVehicle = `${vehicle.year} ${vehicle.make} ${vehicle.model}${vehicle.trim ? ` ${vehicle.trim}` : ''}`;
+
   const title =
     vehicle.seoTitle ||
-    `Used ${vehicle.year} ${vehicle.make} ${vehicle.model}${vehicle.trim ? ` ${vehicle.trim}` : ''} for Sale | Planet Motors`;
+    `${titleVehicle} — Planet Motors Richmond Hill`;
 
   const description =
     vehicle.seoDescription ||
-    `Shop this ${vehicle.year} ${vehicle.make} ${vehicle.model}${vehicle.trim ? ` ${vehicle.trim}` : ''} with ${vehicle.mileageKm.toLocaleString()} km at Planet Motors.`;
+    `${titleVehicle} with ${vehicle.mileageKm.toLocaleString()} km. View photos, pricing, and book a test drive at Planet Motors.`;
 
-  const canonicalUrl = `${SITE_URL}/inventory/${vehicle.slug}`;
+  const make = vehicle.make.toLowerCase().replace(/\s+/g, '-');
+  const model = vehicle.model.toLowerCase().replace(/\s+/g, '-');
+  const canonicalUrl = `${SITE_URL}/inventory/used/${make}/${model}/${vehicle.slug}`;
 
   return {
     title,
