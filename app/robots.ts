@@ -1,8 +1,5 @@
 import type { MetadataRoute } from 'next';
 import { buildAbsoluteUrl, siteConfig } from '@/lib/site/config';
-import { cacheProfiles } from '@/lib/site/cache';
-
-export const revalidate = cacheProfiles.robots;
 
 export default function robots(): MetadataRoute.Robots {
   return {

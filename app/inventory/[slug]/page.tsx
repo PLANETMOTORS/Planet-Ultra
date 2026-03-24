@@ -1,5 +1,8 @@
 import { notFound, permanentRedirect } from 'next/navigation';
-import { getVehicleBySlug } from '@/lib/data/vehicleQueries';
+import {
+  getAllVehicles,
+  getVehicleBySlug,
+} from '@/lib/data/vehicleQueries';
 import { buildVehicleCanonicalPath } from '@/lib/site/routes';
 
 type VehicleHelperRouteProps = {
@@ -7,6 +10,12 @@ type VehicleHelperRouteProps = {
     slug: string;
   }>;
 };
+
+export async function generateStaticParams() {
+  return getAllVehicles().map((vehicle) => ({
+    slug: vehicle.slug,
+  }));
+}
 
 export default async function VehicleHelperRoutePage({
   params,

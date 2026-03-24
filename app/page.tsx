@@ -3,10 +3,7 @@ import { StructuredData } from '@/components/seo/StructuredData';
 import { getFeaturedVehicles } from '@/lib/data/vehicleQueries';
 import { buildHomeMetadata } from '@/lib/seo/metadata';
 import { buildHomeJsonLd } from '@/lib/seo/schema';
-import { cacheProfiles } from '@/lib/site/cache';
 import { buildInventoryPath, buildVehicleCanonicalPath } from '@/lib/site/routes';
-
-export const revalidate = cacheProfiles.home;
 
 export const metadata = buildHomeMetadata();
 

@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { VehicleImage } from '@/components/media/VehicleImage';
 import { StructuredData } from '@/components/seo/StructuredData';
@@ -7,11 +8,8 @@ import {
 } from '@/lib/data/vehicleQueries';
 import { buildInventoryMetadata } from '@/lib/seo/metadata';
 import { buildInventoryJsonLd } from '@/lib/seo/schema';
-import { cacheProfiles } from '@/lib/site/cache';
-import { buildVehicleCanonicalPath } from '@/lib/site/routes';
+import { buildInventoryPath, buildVehicleCanonicalPath } from '@/lib/site/routes';
 import type { Metadata } from 'next';
-
-export const revalidate = cacheProfiles.inventory;
 
 type SearchParamsValue = string | string[] | undefined;
 
@@ -43,7 +41,31 @@ export async function generateMetadata({
   });
 }
 
-export default async function InventoryPage({ searchParams }: InventoryPageProps) {
+function InventoryPageFallback() {
+  return (
+    <>
+      <section className="section page-hero">
+        <div className="container">
+          <p className="eyebrow">Inventory</p>
+          <h1 className="page-title">Browse used inventory</h1>
+          <p className="hero-copy">
+            Preparing inventory filters and canonical listing results.
+          </p>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="container">
+          <article className="card">
+            <p className="muted">Loading inventory results...</p>
+          </article>
+        </div>
+      </section>
+    </>
+  );
+}
+
+async function InventoryPageContent({ searchParams }: InventoryPageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const query = readSearchParam(resolvedSearchParams.q).trim();
   const make = readSearchParam(resolvedSearchParams.make).trim();
@@ -68,7 +90,7 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
   const filterOptions = getInventoryFilterOptions();
 
   return (
-    <main>
+    <>
       <StructuredData
         data={buildInventoryJsonLd(vehicles)}
         id="inventory-structured-data"
@@ -140,7 +162,7 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
                 <button className="button button-primary" type="submit">
                   Apply filters
                 </button>
-                <Link className="button button-secondary" href="/inventory">
+                <Link className="button button-secondary" href={buildInventoryPath()}>
                   Reset
                 </Link>
               </div>
@@ -189,6 +211,16 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
           </div>
         </div>
       </section>
+    </>
+  );
+}
+
+export default function InventoryPage(props: InventoryPageProps) {
+  return (
+    <main>
+      <Suspense fallback={<InventoryPageFallback />}>
+        <InventoryPageContent {...props} />
+      </Suspense>
     </main>
   );
 }

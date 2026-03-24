@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
-import dynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { VehicleImage } from '@/components/media/VehicleImage';
+import { Vehicle360Viewer } from '@/components/media/Vehicle360Viewer';
 import { StructuredData } from '@/components/seo/StructuredData';
 import {
   getCanonicalVehiclePaths,
@@ -9,7 +10,6 @@ import {
 } from '@/lib/data/vehicleQueries';
 import { buildVehicleMetadata } from '@/lib/seo/metadata';
 import { buildVehicleJsonLd } from '@/lib/seo/schema';
-import { cacheProfiles } from '@/lib/site/cache';
 import {
   getSafeVehicle360Asset,
   getVehicle360PosterImage,
@@ -21,16 +21,6 @@ import {
   getVehicleDisplayName,
   getVehiclePrimaryPrice,
 } from '@/lib/site/routes';
-
-export const revalidate = cacheProfiles.vehicle;
-
-const LazyVehicle360Viewer = dynamic(
-  () => import('@/components/media/Vehicle360Viewer').then((module) => module.Vehicle360Viewer),
-  {
-    ssr: false,
-    loading: () => null,
-  },
-);
 
 type VehicleDetailPageProps = {
   params: Promise<{
@@ -155,9 +145,9 @@ export default async function VehicleDetailPage({
             </div>
 
             <div className="card-actions">
-              <a className="button button-primary" href={buildInventoryPath()}>
+              <Link className="button button-primary" href={buildInventoryPath()}>
                 Back to inventory
-              </a>
+              </Link>
             </div>
           </aside>
         </div>
@@ -186,7 +176,7 @@ export default async function VehicleDetailPage({
               Poster-first, click-to-hydrate, and explicitly kept off the critical
               render path.
             </p>
-            <LazyVehicle360Viewer
+            <Vehicle360Viewer
               asset={safe360Asset}
               label={displayName}
               poster={posterImage}
