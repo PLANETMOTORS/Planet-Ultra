@@ -170,18 +170,28 @@ export default async function VehicleDetailPage({
             </div>
           </article>
 
-          <article className="card">
-            <p className="eyebrow">360 view</p>
-            <p className="muted">
-              Poster-first, click-to-hydrate, and explicitly kept off the critical
-              render path.
-            </p>
-            <Vehicle360Viewer
-              asset={safe360Asset}
-              label={displayName}
-              poster={posterImage}
-            />
-          </article>
+          {safe360Asset ? (
+            <article className="card">
+              <p className="eyebrow">360 view</p>
+              <p className="muted">
+                Poster-first, click-to-hydrate, and explicitly kept off the critical
+                render path.
+              </p>
+              <Vehicle360Viewer
+                asset={safe360Asset}
+                label={displayName}
+                poster={posterImage}
+              />
+            </article>
+          ) : (
+            <article className="card">
+              <p className="eyebrow">360 view</p>
+              <p className="muted">
+                No 360 asset is published for this vehicle, so the runtime stays fully
+                outside the critical path.
+              </p>
+            </article>
+          )}
         </div>
       </section>
     </main>
