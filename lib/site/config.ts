@@ -1,4 +1,4 @@
-const DEFAULT_SITE_URL = 'https://planetmotors.ca';
+const DEFAULT_SITE_URL = 'https://www.planetmotors.app';
 const DEFAULT_OG_IMAGE =
   'https://res.cloudinary.com/demo/image/upload/f_auto,q_auto,c_fill,w_1200,h_630/sample.jpg';
 
