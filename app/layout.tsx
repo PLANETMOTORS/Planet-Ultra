@@ -1,10 +1,19 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
+import { getSiteUrl } from '@/lib/seo/routes';
 
 export const metadata: Metadata = {
-  title: 'Planet Motors',
-  description: 'Next.js 16 rebuild for Planet Motors inventory, VDP, SEO, and performance platform.',
+  metadataBase: new URL(getSiteUrl()),
+  title: {
+    default: 'Planet Motors',
+    template: '%s | Planet Motors',
+  },
+  description: 'Used vehicle inventory, VDP, and purchase journey for Planet Motors.',
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import type { Vehicle } from '@/types/vehicle';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://planetmotors.ca';
+import { buildAbsoluteUrl, buildCanonicalVdpPath } from '@/lib/seo/routes';
+import { isAllowedMediaUrl } from '@/lib/media/cloudinary';
 
 export function buildVehicleMetadata(vehicle: Vehicle): Metadata {
   const title =
@@ -12,7 +12,8 @@ export function buildVehicleMetadata(vehicle: Vehicle): Metadata {
     vehicle.seoDescription ||
     `Shop this ${vehicle.year} ${vehicle.make} ${vehicle.model}${vehicle.trim ? ` ${vehicle.trim}` : ''} with ${vehicle.mileageKm.toLocaleString()} km at Planet Motors.`;
 
-  const canonicalUrl = `${SITE_URL}/inventory/${vehicle.slug}`;
+  const canonicalUrl = buildAbsoluteUrl(buildCanonicalVdpPath(vehicle.make, vehicle.model, vehicle.slug));
+  const safeImageUrl = vehicle.heroImage?.url && isAllowedMediaUrl(vehicle.heroImage.url) ? vehicle.heroImage.url : null;
 
   return {
     title,
@@ -25,10 +26,10 @@ export function buildVehicleMetadata(vehicle: Vehicle): Metadata {
       description,
       url: canonicalUrl,
       type: 'website',
-      images: vehicle.heroImage?.url
+      images: safeImageUrl
         ? [
             {
-              url: vehicle.heroImage.url,
+              url: safeImageUrl,
               alt: vehicle.heroImage.alt || title,
             },
           ]
@@ -38,7 +39,7 @@ export function buildVehicleMetadata(vehicle: Vehicle): Metadata {
       card: 'summary_large_image',
       title,
       description,
-      images: vehicle.heroImage?.url ? [vehicle.heroImage.url] : [],
+      images: safeImageUrl ? [safeImageUrl] : [],
     },
   };
 }

@@ -1,4 +1,37 @@
+import type { Metadata } from 'next';
+import { JsonLdScript } from '@/lib/seo/JsonLdScript';
+import { REVALIDATE_SECONDS } from '@/lib/cache/policies';
+import { buildAbsoluteUrl } from '@/lib/seo/routes';
+import { buildHomeJsonLd } from '@/lib/seo/structuredData';
+
+export const revalidate = REVALIDATE_SECONDS.home;
+export const dynamic = 'force-static';
+
+export const metadata: Metadata = {
+  title: 'Planet Motors | Buy, Sell, Trade Vehicles in Ontario',
+  description:
+    'Shop used vehicles, value your trade, and explore purchase options with Planet Motors in Ontario.',
+  alternates: {
+    canonical: buildAbsoluteUrl('/'),
+  },
+  openGraph: {
+    type: 'website',
+    url: buildAbsoluteUrl('/'),
+    title: 'Planet Motors | Buy, Sell, Trade Vehicles in Ontario',
+    description:
+      'Shop used vehicles, value your trade, and explore purchase options with Planet Motors in Ontario.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Planet Motors | Buy, Sell, Trade Vehicles in Ontario',
+    description:
+      'Shop used vehicles, value your trade, and explore purchase options with Planet Motors in Ontario.',
+  },
+};
+
 export default function HomePage() {
+  const jsonLd = buildHomeJsonLd();
+
   return (
     <main>
       <header className="topbar">
@@ -132,13 +165,14 @@ export default function HomePage() {
             <p className="muted">Starter homepage shell for the Next.js rebuild.</p>
           </div>
           <div className="footer-links">
-            <a href="#">Inventory</a>
-            <a href="#">Sell or Trade</a>
-            <a href="#">Finance</a>
-            <a href="#">Contact</a>
+            <a href="/inventory">Inventory</a>
+            <a href="/sell-or-trade">Sell or Trade</a>
+            <a href="/finance">Finance</a>
+            <a href="/contact">Contact</a>
           </div>
         </div>
       </footer>
+      <JsonLdScript data={jsonLd} />
     </main>
   );
 }
