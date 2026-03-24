@@ -1,32 +1,32 @@
 import type { MetadataRoute } from 'next';
+import { getCanonicalVehiclePaths } from '@/lib/data/vehicleQueries';
+import { buildAbsoluteUrl } from '@/lib/site/config';
+import { cacheProfiles } from '@/lib/site/cache';
+import { buildInventoryPath } from '@/lib/site/routes';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://planetmotors.ca';
+export const revalidate = cacheProfiles.sitemap;
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  const lastModified = new Date();
+
   return [
     {
-      url: SITE_URL,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
+      url: buildAbsoluteUrl('/'),
+      lastModified,
+      changeFrequency: 'weekly',
       priority: 1,
     },
     {
-      url: `${SITE_URL}/inventory`,
-      lastModified: new Date(),
+      url: buildAbsoluteUrl(buildInventoryPath()),
+      lastModified,
       changeFrequency: 'daily',
       priority: 0.9,
     },
-    {
-      url: `${SITE_URL}/sell-or-trade`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
+    ...getCanonicalVehiclePaths().map((path) => ({
+      url: buildAbsoluteUrl(path),
+      lastModified,
+      changeFrequency: 'daily' as const,
       priority: 0.8,
-    },
-    {
-      url: `${SITE_URL}/finance`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
+    })),
   ];
 }

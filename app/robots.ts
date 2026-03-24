@@ -1,14 +1,19 @@
 import type { MetadataRoute } from 'next';
+import { buildAbsoluteUrl, siteConfig } from '@/lib/site/config';
+import { cacheProfiles } from '@/lib/site/cache';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://planetmotors.ca';
+export const revalidate = cacheProfiles.robots;
 
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: {
-      userAgent: '*',
-      allow: '/',
-    },
-    sitemap: `${SITE_URL}/sitemap.xml`,
-    host: SITE_URL,
+    rules: [
+      {
+        userAgent: '*',
+        allow: ['/', '/inventory', '/inventory/used/'],
+        disallow: ['/inventory/*?*', '/api/', '/_next/'],
+      },
+    ],
+    sitemap: buildAbsoluteUrl('/sitemap.xml'),
+    host: siteConfig.siteUrl,
   };
 }
