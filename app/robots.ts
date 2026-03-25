@@ -1,12 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://planetmotors.ca';
-
-/**
- * The Host directive takes a bare hostname (no protocol, no trailing slash).
- * Extract it from SITE_URL so it stays in sync with the env var.
- */
-const SITE_HOST = new URL(SITE_URL).host;
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.planetmotors.app';
 
 /**
  * Robots.txt rules:
@@ -15,6 +9,10 @@ const SITE_HOST = new URL(SITE_URL).host;
  * - API routes → disallowed.
  * - Admin/internal routes → disallowed.
  * - _next/static and _next/image served by Next but not page content → disallowed for crawlers.
+ *
+ * Host directive is omitted: Next.js MetadataRoute.Robots passes the value through
+ * verbatim with no reliable protocol-stripping, and the Sitemap line already
+ * establishes the canonical origin for crawlers that support it.
  */
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -37,6 +35,5 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
-    host: SITE_HOST,
   };
 }
