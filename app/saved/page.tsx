@@ -37,7 +37,7 @@ export default async function SavedPage() {
           <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {saved.map((v) => (
               <li key={v.vehicleId} className="card">
-                <a href={`/inventory/${v.vehicleSlug}`}>{v.vehicleSlug}</a>
+                <Link href={`/inventory/${v.vehicleSlug}`}>{v.vehicleSlug}</Link>
                 <p className="muted" style={{ fontSize: '0.85rem', marginTop: '4px' }}>
                   Saved {new Date(v.savedAt).toLocaleDateString('en-CA')}
                 </p>

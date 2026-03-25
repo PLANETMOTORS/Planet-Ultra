@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { getSessionUser } from '@/lib/auth/session';
 import { redirect } from 'next/navigation';
 
@@ -29,8 +30,8 @@ export default async function AccountPage() {
         </p>
         <nav aria-label="Account navigation">
           <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <li><a href="/saved">Saved Vehicles</a></li>
-            <li><a href="/profile">Profile</a></li>
+            <li><Link href="/saved">Saved Vehicles</Link></li>
+            <li><Link href="/profile">Profile</Link></li>
           </ul>
         </nav>
       </div>
