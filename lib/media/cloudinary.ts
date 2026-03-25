@@ -85,6 +85,29 @@ export function heroImageUrl(rawUrl: string): string {
 }
 
 /**
+ * Open Graph / Twitter social card image transform.
+ * 1200×630 fill, JPEG format, quality auto, gravity auto.
+ *
+ * 1200×630 is the canonical OG social-card spec (1.91:1 ratio).
+ * Format is forced to JPEG because some social scrapers (Facebook, iMessage)
+ * do not honour AVIF/WebP Accept headers and will reject non-JPEG/PNG cards.
+ * Gravity auto enables Cloudinary face/subject detection for best crop.
+ */
+export function socialCardImageUrl(rawUrl: string): string {
+  return applyCloudinaryTransforms(rawUrl, {
+    width: 1200,
+    height: 630,
+    crop: 'fill',
+    format: 'jpg',
+    quality: 'auto',
+    gravity: 'auto',
+  });
+}
+
+/** Declared dimensions for the OG social card — pass these to Next.js Metadata. */
+export const SOCIAL_CARD_DIMS = { width: 1200, height: 630 } as const;
+
+/**
  * Standard gallery thumbnail transform.
  * 600×400 fill, auto format/quality.
  */
