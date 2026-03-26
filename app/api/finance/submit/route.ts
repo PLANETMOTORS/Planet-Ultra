@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import { submitFinanceApplication } from '@/lib/finance/submissionBoundary';
+import { dispatchCrmEvent, buildFinanceLeadEvent } from '@/lib/crm/autoraptor';
 import type { FinanceApplicationPayload } from '@/types/a5';
 
 /**
@@ -66,6 +67,22 @@ export async function POST(req: NextRequest) {
 
   try {
     const result = await submitFinanceApplication(payload);
+
+    // Dispatch CRM finance lead event — fire-and-forget, non-blocking
+    dispatchCrmEvent(buildFinanceLeadEvent({
+      vehicleId: parsed.data.vehicleId,
+      vehicleSlug: parsed.data.vehicleSlug,
+      vehicleYear: parsed.data.vehicleYear,
+      vehicleMake: parsed.data.vehicleMake,
+      vehicleModel: parsed.data.vehicleModel,
+      firstName: parsed.data.firstName,
+      lastName: parsed.data.lastName,
+      email: parsed.data.email,
+      phone: parsed.data.phone,
+      clerkUserId: userId ?? undefined,
+    })).catch((err) => {
+      console.error('[api/finance/submit] CRM dispatch error:', (err as Error).message);
+    });
 
     const statusCode =
       result.status === 'accepted' || result.status === 'queued' ? 200 : 502;
