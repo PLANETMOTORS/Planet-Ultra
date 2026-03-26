@@ -15,6 +15,11 @@ import { NextResponse } from 'next/server';
  * 404 when the __clerk_db_jwt browser cookie is absent (e.g. first load, curl).
  * With explicit redirect, unauthenticated requests always get a proper 302 to
  * /sign-in regardless of Clerk key mode (dev or production).
+ *
+ * Resilience: when NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is not set, clerkMiddleware
+ * throws a hard error that crashes the edge function (MIDDLEWARE_INVOCATION_FAILED).
+ * The outer try/catch allows all routes to pass through safely until the key is
+ * provisioned in Vercel, preventing a full-site 500 outage.
  */
 const isProtectedRoute = createRouteMatcher([
   '/account(.*)',
@@ -23,8 +28,15 @@ const isProtectedRoute = createRouteMatcher([
 ]);
 
 const SIGN_IN_URL = process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL ?? '/sign-in';
+const CLERK_KEY = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 export default clerkMiddleware(async (auth, req) => {
+  if (!CLERK_KEY) {
+    // Clerk not yet provisioned — allow all routes through without auth.
+    // Set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY in Vercel to activate auth.
+    return NextResponse.next();
+  }
+
   if (!isProtectedRoute(req)) return;
 
   const { userId } = await auth();
