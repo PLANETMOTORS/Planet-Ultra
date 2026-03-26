@@ -3,7 +3,7 @@ import type { Vehicle } from '@/types/vehicle';
 import { buildCanonicalVdpUrl } from './urlUtils';
 import { socialCardImageUrl, SOCIAL_CARD_DIMS } from '@/lib/media/cloudinary';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.planetmotors.app';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://dev.planetmotors.ca';
 
 /**
  * Builds Next.js Metadata for the canonical VDP route.

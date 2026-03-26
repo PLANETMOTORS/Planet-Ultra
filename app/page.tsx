@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import JsonLd from '@/components/JsonLd';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.planetmotors.app';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://dev.planetmotors.ca';
 
 export const metadata: Metadata = {
   title: 'Buy, Sell & Trade Vehicles Online',

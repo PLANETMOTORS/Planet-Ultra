@@ -54,7 +54,7 @@ export async function createDepositSession(
   const Stripe = (await import('stripe')).default;
   const stripe = new Stripe(secretKey, { apiVersion: '2026-02-25.clover' });
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.planetmotors.app';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dev.planetmotors.ca';
   const canonicalVdpUrl = `${siteUrl}/inventory/used/${encodeURIComponent(
     request.vehicleMake.toLowerCase(),
   )}/${encodeURIComponent(request.vehicleModel.toLowerCase())}/${request.vehicleSlug}`;

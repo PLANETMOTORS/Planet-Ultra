@@ -1,7 +1,7 @@
 import type { Vehicle } from '@/types/vehicle';
 import { buildCanonicalVdpUrl } from './urlUtils';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.planetmotors.app';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://dev.planetmotors.ca';
 
 /**
  * Builds a schema.org/Car (plus OfferShipping) JSON-LD object for a vehicle.

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { ClerkProvider } from '@clerk/nextjs';
 import './globals.css';
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.planetmotors.app';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://dev.planetmotors.ca';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
