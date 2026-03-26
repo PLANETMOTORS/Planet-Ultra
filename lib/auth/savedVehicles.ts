@@ -6,21 +6,26 @@
  *
  * All functions run server-side only.
  * Returns safe empty/false responses when DATABASE_URL is not set.
+ *
+ * Query interface: sql.query(string, params[]) — the conventional parameterised
+ * call supported by @neondatabase/serverless ≥ 0.6. The tagged-template form
+ * (sql`…`) is NOT used here because it does not support $1/$2 placeholders via
+ * a separate params array, making it harder to compose safely.
  */
 
-import { neon } from '@neondatabase/serverless';
+import { neon, type NeonQueryFunction } from '@neondatabase/serverless';
 import type { SavedVehicleRecord } from '@/types/a5';
 
-type SqlFn = (query: string, params?: unknown[]) => Promise<unknown[]>;
+type Sql = NeonQueryFunction<false, false>;
 
 /**
  * Returns a Neon SQL executor when DATABASE_URL is configured, null otherwise.
  * All callers must handle the null case gracefully.
  */
-function getSql(): SqlFn | null {
+function getSql(): Sql | null {
   const url = process.env.DATABASE_URL;
   if (!url) return null;
-  return neon(url) as unknown as SqlFn;
+  return neon(url);
 }
 
 /**
@@ -32,14 +37,16 @@ export async function getSavedVehicles(
   const sql = getSql();
   if (!sql) return [];
 
+  type Row = { clerk_user_id: string; vehicle_id: string; vehicle_slug: string; saved_at: string };
+
   try {
-    const rows = await sql(
+    const rows = (await sql.query(
       `SELECT clerk_user_id, vehicle_id, vehicle_slug, saved_at
        FROM saved_vehicles
        WHERE clerk_user_id = $1
        ORDER BY saved_at DESC`,
       [clerkUserId],
-    ) as Array<{ clerk_user_id: string; vehicle_id: string; vehicle_slug: string; saved_at: string }>;
+    )) as Row[];
 
     return rows.map((r) => ({
       clerkUserId: r.clerk_user_id,
@@ -63,7 +70,7 @@ export async function isVehicleSaved(
   if (!sql) return false;
 
   try {
-    const rows = await sql(
+    const rows = await sql.query(
       `SELECT 1 FROM saved_vehicles
        WHERE clerk_user_id = $1 AND vehicle_id = $2
        LIMIT 1`,
@@ -87,7 +94,7 @@ export async function saveVehicle(
   if (!sql) return { ok: false };
 
   try {
-    await sql(
+    await sql.query(
       `INSERT INTO saved_vehicles (clerk_user_id, vehicle_id, vehicle_slug)
        VALUES ($1, $2, $3)
        ON CONFLICT (clerk_user_id, vehicle_id) DO NOTHING`,
@@ -110,7 +117,7 @@ export async function unsaveVehicle(
   if (!sql) return { ok: false };
 
   try {
-    await sql(
+    await sql.query(
       `DELETE FROM saved_vehicles
        WHERE clerk_user_id = $1 AND vehicle_id = $2`,
       [clerkUserId, vehicleId],
