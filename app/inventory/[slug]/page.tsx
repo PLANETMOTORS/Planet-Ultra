@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation';
+import { permanentRedirect } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { buildCanonicalVdpPath } from '@/lib/seo/urlUtils';
@@ -53,7 +53,7 @@ export default async function InventorySlugRedirectPage({
   const canonicalPath = await resolveCanonicalPath(slug);
 
   if (canonicalPath) {
-    redirect(canonicalPath);
+    permanentRedirect(canonicalPath);
   }
 
   /*
