@@ -15,7 +15,7 @@
 ## Metadata Implementation
 
 ### `metadataBase`
-Set in `app/layout.tsx` from `NEXT_PUBLIC_SITE_URL` (default `https://planetmotors.ca`).
+Set in `app/layout.tsx` from `NEXT_PUBLIC_SITE_URL` (default `https://dev.planetmotors.ca`).
 All relative `alternates.canonical` and `openGraph.url` values resolve against this base.
 
 ### Title template
