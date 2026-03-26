@@ -1,13 +1,52 @@
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import JsonLd from '@/components/JsonLd';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://dev.planetmotors.ca';
+
+export const metadata: Metadata = {
+  title: 'Buy, Sell & Trade Vehicles Online',
+  description:
+    'Planet Motors is an OMVIC registered dealer in Ontario. Browse quality used vehicles, get a fast trade-in offer, and apply for financing online.',
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'Planet Motors – Buy, Sell & Trade Vehicles Online',
+    description:
+      'OMVIC registered Ontario dealer. Quality used vehicles, transparent pricing, fast trade-in appraisals, and flexible financing.',
+    type: 'website',
+    url: '/',
+  },
+};
+
+const autoDealerJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'AutoDealer',
+  name: 'Planet Motors',
+  url: SITE_URL,
+  description:
+    'Planet Motors is an OMVIC registered used vehicle dealer in Ontario offering quality pre-owned vehicles, trade-in appraisals, and financing.',
+  areaServed: {
+    '@type': 'Province',
+    name: 'Ontario',
+    addressCountry: 'CA',
+  },
+  sameAs: [],
+};
+
 export default function HomePage() {
   return (
     <main>
+      <JsonLd data={autoDealerJsonLd} />
+
       <header className="topbar">
         <div className="container topbar-inner">
           <div className="brand">Planet Motors</div>
-          <nav className="nav">
-            <a href="#">Shop Inventory</a>
-            <a href="#">Sell or Trade</a>
-            <a href="#">Finance</a>
+          <nav className="nav" aria-label="Primary navigation">
+            <Link href="/inventory">Shop Inventory</Link>
+            <a href="/sell-or-trade">Sell or Trade</a>
+            <a href="/finance">Finance</a>
             <a href="#">More</a>
           </nav>
         </div>
@@ -26,10 +65,10 @@ export default function HomePage() {
               will be connected after the structure is locked.
             </p>
             <div className="hero-actions">
-              <a className="button button-primary" href="#">
+              <Link className="button button-primary" href="/inventory">
                 Shop Inventory
-              </a>
-              <a className="button button-secondary" href="#">
+              </Link>
+              <a className="button button-secondary" href="/sell-or-trade">
                 Sell or Trade
               </a>
             </div>
@@ -107,7 +146,7 @@ export default function HomePage() {
             <p className="muted">
               Placeholder section for trade-in flow, plate/VIN entry, and instant appraisal steps.
             </p>
-            <a className="button button-primary" href="#">
+            <a className="button button-primary" href="/sell-or-trade">
               Start Trade-In
             </a>
           </article>
@@ -118,7 +157,7 @@ export default function HomePage() {
             <p className="muted">
               Placeholder section for finance calculator, approval steps, and payment confidence messaging.
             </p>
-            <a className="button button-secondary" href="#">
+            <a className="button button-secondary" href="/finance">
               Explore Financing
             </a>
           </article>
@@ -132,9 +171,9 @@ export default function HomePage() {
             <p className="muted">Starter homepage shell for the Next.js rebuild.</p>
           </div>
           <div className="footer-links">
-            <a href="#">Inventory</a>
-            <a href="#">Sell or Trade</a>
-            <a href="#">Finance</a>
+            <Link href="/inventory">Inventory</Link>
+            <a href="/sell-or-trade">Sell or Trade</a>
+            <a href="/finance">Finance</a>
             <a href="#">Contact</a>
           </div>
         </div>
