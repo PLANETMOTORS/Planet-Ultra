@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { buildCanonicalVdpPath } from '@/lib/seo/urlUtils';
 
 /**
  * Helper/redirect-only route: /inventory/[slug]
@@ -36,9 +37,11 @@ interface SlugParams {
  * NOTE: This stub will be replaced with a real Postgres lookup in a later phase.
  * Must return a root-relative canonical path for 308 redirect.
  */
-async function resolveCanonicalPath(_slug: string): Promise<string | null> {
-  // TODO: query Postgres for make+model by slug, then buildCanonicalVdpPath
-  return null;
+async function resolveCanonicalPath(slug: string): Promise<string | null> {
+  // TODO: query Postgres for make+model by slug, then buildCanonicalVdpPath.
+  // Until the data layer is wired, keep helper-route links functional by
+  // mirroring the VDP fixture vehicle used on the canonical route.
+  return buildCanonicalVdpPath('BMW', 'X3', slug);
 }
 
 export default async function InventorySlugRedirectPage({

@@ -5,6 +5,7 @@ import { buildVehicleMetadata } from '@/lib/seo/buildVehicleMetadata';
 import { buildVehicleJsonLd } from '@/lib/seo/buildVehicleJsonLd';
 import { buildBreadcrumbJsonLd } from '@/lib/seo/buildBreadcrumbJsonLd';
 import { buildCanonicalVdpPath } from '@/lib/seo/urlUtils';
+import { buildFinanceCtaUrl, buildPurchaseCtaUrl } from '@/lib/cta/context';
 import { has360Asset, get360PosterUrl } from '@/lib/media/360';
 import JsonLd from '@/components/JsonLd';
 
@@ -111,6 +112,16 @@ export default async function VdpPage({
 
   const canonicalPath = buildCanonicalVdpPath(make, model, slug);
   const vehicleName = `${vehicle.year} ${vehicle.make} ${vehicle.model}${vehicle.trim ? ` ${vehicle.trim}` : ''}`;
+  const ctaContext = {
+    vehicleId: vehicle.id,
+    vehicleSlug: vehicle.slug,
+    vehicleYear: vehicle.year,
+    vehicleMake: vehicle.make,
+    vehicleModel: vehicle.model,
+    vehiclePriceCad: vehicle.salePriceCad ?? vehicle.priceCad,
+  };
+  const financeCtaUrl = buildFinanceCtaUrl(ctaContext);
+  const purchaseCtaUrl = buildPurchaseCtaUrl(ctaContext);
 
   const breadcrumb = buildBreadcrumbJsonLd([
     { name: 'Home', path: '/' },
@@ -321,12 +332,12 @@ export default async function VdpPage({
               </p>
             )}
             <div style={{ display: 'flex', gap: '12px', marginTop: '16px', flexWrap: 'wrap' }}>
-              <a className="button button-primary" href="/finance">
+              <Link className="button button-primary" href={financeCtaUrl}>
                 Apply for Financing
-              </a>
-              <a className="button button-secondary" href="/sell-or-trade">
-                Trade In Your Vehicle
-              </a>
+              </Link>
+              <Link className="button button-secondary" href={purchaseCtaUrl}>
+                Start Purchase / Deposit
+              </Link>
             </div>
           </div>
         </div>

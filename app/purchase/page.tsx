@@ -26,6 +26,10 @@ export default async function PurchasePage({ searchParams }: PurchasePageProps) 
   const params = await searchParams;
   const ctx = parseVehicleCtaContext(params);
   const userId = await getSessionUserId();
+  const purchaseUrl = `/purchase?${new URLSearchParams(params).toString()}`;
+  const signInUrl = `/sign-in?${new URLSearchParams({
+    redirect_url: purchaseUrl,
+  }).toString()}`;
 
   return (
     <main>
@@ -48,9 +52,9 @@ export default async function PurchasePage({ searchParams }: PurchasePageProps) 
               <div className="card" style={{ marginBottom: '16px' }}>
                 <p className="muted">
                   Please{' '}
-                  <a href={`/sign-in?redirect_url=/purchase?${new URLSearchParams(params).toString()}`}>
+                  <Link href={signInUrl}>
                     sign in
-                  </a>{' '}
+                  </Link>{' '}
                   to place a deposit.
                 </p>
               </div>

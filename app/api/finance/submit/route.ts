@@ -40,27 +40,69 @@ const FinanceSubmitSchema = z.object({
   termMonths: z.number().int().min(12).max(96),
 });
 
+const FinanceSubmitFormSchema = z.object({
+  vehicleId: z.string().min(1).max(255),
+  vehicleSlug: z.string().min(1).max(500),
+  vehicleYear: z.coerce.number().int().min(1900).max(2100),
+  vehicleMake: z.string().min(1).max(100),
+  vehicleModel: z.string().min(1).max(100),
+  vehiclePriceCad: z.coerce.number().positive(),
+  firstName: z.string().min(1).max(100),
+  lastName: z.string().min(1).max(100),
+  email: z.string().email().max(255),
+  phone: z.string().min(7).max(30),
+  downPaymentCad: z.coerce.number().min(0),
+  termMonths: z.coerce.number().int().min(12).max(96),
+});
+
+async function parseFinanceSubmitBody(req: NextRequest): Promise<unknown> {
+  const contentType = req.headers.get('content-type') ?? '';
+
+  if (contentType.includes('application/json')) {
+    return req.json();
+  }
+
+  if (
+    contentType.includes('application/x-www-form-urlencoded') ||
+    contentType.includes('multipart/form-data')
+  ) {
+    const formData = await req.formData();
+    return Object.fromEntries(formData.entries());
+  }
+
+  return req.json();
+}
+
 export async function POST(req: NextRequest) {
   // Resolve session — optional for finance applications
   const { userId } = await auth();
 
   let body: unknown;
   try {
-    body = await req.json();
+    body = await parseFinanceSubmitBody(req);
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
-  const parsed = FinanceSubmitSchema.safeParse(body);
-  if (!parsed.success) {
+  const parsed =
+    body instanceof FormData
+      ? FinanceSubmitFormSchema.safeParse(Object.fromEntries(body.entries()))
+      : FinanceSubmitSchema.safeParse(body);
+
+  const normalized =
+    parsed.success || typeof body !== 'object' || body === null
+      ? parsed
+      : FinanceSubmitFormSchema.safeParse(body);
+
+  if (!normalized.success) {
     return NextResponse.json(
-      { error: 'Invalid payload', issues: parsed.error.issues },
+      { error: 'Invalid payload', issues: normalized.error.issues },
       { status: 400 },
     );
   }
 
   const payload: FinanceApplicationPayload = {
-    ...parsed.data,
+    ...normalized.data,
     clerkUserId: userId ?? null,
   };
 
