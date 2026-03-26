@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import { createDepositSession } from '@/lib/stripe/depositIntent';
+import { dispatchCrmEvent, buildDepositEvent } from '@/lib/crm/autoraptor';
 
 /**
  * POST /api/purchase/submit
@@ -52,7 +53,20 @@ export async function POST(req: NextRequest) {
   try {
     const result = await createDepositSession({
       ...parsed.data,
-      clerkUserId: userId, // always server-resolved, never from client
+      clerkUserId: userId,
+    });
+
+    // Dispatch CRM deposit event — fire-and-forget, non-blocking
+    dispatchCrmEvent(buildDepositEvent({
+      vehicleId: parsed.data.vehicleId,
+      vehicleSlug: parsed.data.vehicleSlug,
+      vehicleYear: parsed.data.vehicleYear,
+      vehicleMake: parsed.data.vehicleMake,
+      vehicleModel: parsed.data.vehicleModel,
+      clerkUserId: userId,
+      meta: { sessionId: result.sessionId, amountCents: result.amountCents },
+    })).catch((err) => {
+      console.error('[api/purchase/submit] CRM dispatch error:', (err as Error).message);
     });
 
     return NextResponse.json(result, { status: 200 });
