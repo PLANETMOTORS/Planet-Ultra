@@ -29,6 +29,15 @@ Single-page execution truth sheet for A1–A5 with strict PASS/FAIL evidence.
 3. Ship extensions as isolated branches after blocker closure.
 4. Any item lacking dependency proof remains `Partial`.
 
+## Latest Runtime Evidence (March 27, 2026)
+- Public routes: `/`, `/inventory`, `/finance`, `/purchase`, `/protection`, `/sign-in`, `/sign-up`, `/robots.txt`, `/sitemap.xml` returned `200`.
+- Protected routes: `/account`, `/saved`, `/profile` returned `307` with correct `redirect_url`.
+- API checks:
+  - `/api/vehicle-views` returned live count payload.
+  - `/api/finance/submit` returned `queued` on valid payload and validation errors on invalid payload.
+  - `/api/purchase/submit` returned `Unauthorized` when unauthenticated.
+  - `/api/saved-vehicles` returned `Unauthorized` when unauthenticated.
+
 ## Required Exit Evidence Format
 - Code gate: `lint`, `typecheck`, `build`.
 - Runtime gate: route/API HTTP proof.
