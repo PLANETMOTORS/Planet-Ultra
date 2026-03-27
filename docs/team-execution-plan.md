@@ -22,6 +22,7 @@ Production target: `www.planetmotors.ca`
 7. `docs/A0-Developer-Package/7-Planet_Ultra_Doc4_Brand_UI_Style_Guide.md`
 8. `docs/A0-Developer-Package/8-Planet_Ultra_DEC_Package.md`
 9. `docs/A0-Developer-Package/9-Planet_Ultra_Developer_Handoff_Checklist.md`
+10. `docs/A0-Developer-Package/10-Planet_Ultra_A6_Target_Architecture_Adoption.md`
 
 ## Mandatory A5 Rules
 - Strict status language: `PASS`, `PARTIAL`, `IN_PROGRESS`, `OPEN`.
@@ -39,3 +40,7 @@ Production target: `www.planetmotors.ca`
 - Use DEC package for all high-impact decisions.
 - Use gate tracker as release lock.
 - Use handoff checklist before each merge to `main`.
+
+## A6 Preparation
+- A6 execution input file is now added and ready for planning:
+  - `docs/A0-Developer-Package/10-Planet_Ultra_A6_Target_Architecture_Adoption.md`
