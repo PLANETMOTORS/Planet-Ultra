@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { getInventoryCards } from '@/lib/inventory/repository';
 
 /**
  * Inventory listing page.
@@ -23,7 +24,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function InventoryPage() {
+export default async function InventoryPage() {
+  const cards = await getInventoryCards(120);
+
   return (
     <main>
       <header className="topbar">
@@ -49,9 +52,26 @@ export default function InventoryPage() {
               Quality used vehicles from an OMVIC registered Ontario dealer.
             </p>
           </div>
-          {/* Inventory grid — live data from Postgres to be wired in a future phase */}
           <div className="card-grid three-up" aria-label="Vehicle inventory">
-            <p className="muted">Inventory loading placeholder — live data coming soon.</p>
+            {cards.length === 0 ? (
+              <p className="muted">No inventory found. Run the HomeNet import to load vehicles.</p>
+            ) : (
+              cards.map(({ vehicle, canonicalPath }) => (
+                <article className="card vehicle-card" key={vehicle.vin}>
+                  <h3>
+                    {vehicle.year} {vehicle.make} {vehicle.model}
+                  </h3>
+                  <p className="muted">{vehicle.trim || 'Trim not listed'}</p>
+                  <p>
+                    <strong>${vehicle.priceCad.toLocaleString('en-CA')}</strong>
+                  </p>
+                  <p className="muted">{vehicle.mileageKm.toLocaleString('en-CA')} km</p>
+                  <Link className="button button-secondary" href={canonicalPath}>
+                    View Details
+                  </Link>
+                </article>
+              ))
+            )}
           </div>
         </div>
       </section>

@@ -93,6 +93,33 @@ function splitMakeModelTrim(value, fallbackYear) {
   return { make, model, trim };
 }
 
+function slugify(input) {
+  return String(input)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+function extractSlug(row, year, make, model) {
+  const vdpUrl = row['Website VDP URL'] || '';
+  if (vdpUrl) {
+    try {
+      const parsed = new URL(vdpUrl.replace('//inventory', '/inventory'));
+      const parts = parsed.pathname.split('/').filter(Boolean);
+      if (parts.length >= 2) {
+        const candidate = parts[parts.length - 1].replace(/[^a-zA-Z0-9-]/g, '');
+        if (candidate) return slugify(candidate);
+      }
+    } catch {
+      // Fall through to generated slug.
+    }
+  }
+
+  const stock = row.Stock || row.VIN || `${year}-${make}-${model}`;
+  return slugify(stock);
+}
+
 async function main() {
   const csvPath =
     process.argv[2] ??
@@ -138,19 +165,22 @@ async function main() {
             ? 'locked'
             : 'available';
 
+      const slug = extractSlug(row, year, make, model);
+
       await sql.query(
         `INSERT INTO inventory_vehicles (
-          vin, stock, rooftop, vehicle_type, year, make, model, trim,
+          slug, vin, stock, rooftop, vehicle_type, year, make, model, trim,
           exterior_color, interior_color, transmission, fuel_type,
           selling_price_cad, mileage_km, date_in_stock, date_last_touched,
           days_in_stock, vdp_url, photos_count, status, source_file, imported_at, raw_payload
         ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8,
-          $9, $10, $11, $12,
-          $13, $14, $15, $16,
-          $17, $18, $19, $20, $21, NOW(), $22::jsonb
+          $1, $2, $3, $4, $5, $6, $7, $8, $9,
+          $10, $11, $12, $13,
+          $14, $15, $16, $17,
+          $18, $19, $20, $21, $22, NOW(), $23::jsonb
         )`,
         [
+          slug,
           vin,
           row.Stock || vin,
           row.Rooftop || null,

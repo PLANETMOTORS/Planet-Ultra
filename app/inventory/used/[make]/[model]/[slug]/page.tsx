@@ -7,6 +7,7 @@ import { buildBreadcrumbJsonLd } from '@/lib/seo/buildBreadcrumbJsonLd';
 import { buildCanonicalVdpPath } from '@/lib/seo/urlUtils';
 import { has360Asset, get360PosterUrl } from '@/lib/media/360';
 import JsonLd from '@/components/JsonLd';
+import { getInventoryVehicleBySlug } from '@/lib/inventory/repository';
 
 /**
  * Canonical VDP route: /inventory/used/[make]/[model]/[slug]
@@ -33,40 +34,7 @@ interface VdpParams {
  * The function signature and null-return contract must be preserved.
  */
 async function getVehicleBySlug(_slug: string): Promise<Vehicle | null> {
-  // TODO: replace with real Postgres query via the data layer.
-  //
-  // DEV FIXTURE — returns a representative vehicle for any slug so that
-  // generateMetadata exercises the full metadata path including the
-  // socialCardImageUrl() Cloudinary transform. This fixture is intentionally
-  // realistic: it uses a /upload/ Cloudinary URL so the transform fires.
-  // Remove or gate behind NODE_ENV==='development' once Postgres is wired.
-  return {
-    id: 'fixture-001',
-    slug: _slug,
-    vin: '5UXWX9C56F0D12345',
-    stockNumber: 'PM-1001',
-    year: 2021,
-    make: 'BMW',
-    model: 'X3',
-    trim: 'xDrive30i',
-    bodyStyle: 'SUV',
-    drivetrain: 'AWD',
-    fuelType: 'Gasoline',
-    transmission: 'Automatic',
-    mileageKm: 58000,
-    exteriorColor: 'Alpine White',
-    interiorColor: 'Black',
-    priceCad: 34995,
-    status: 'available',
-    isFeatured: true,
-    isCertified: false,
-    heroImage: {
-      url: 'https://res.cloudinary.com/planet-motors/image/upload/v1700000000/vehicles/bmw-x3-fixture-hero.jpg',
-      alt: '2021 BMW X3 xDrive30i — Alpine White',
-      width: 1920,
-      height: 1280,
-    },
-  };
+  return getInventoryVehicleBySlug(_slug);
 }
 
 export async function generateMetadata({
