@@ -1,0 +1,46 @@
+name: Vercel Sync
+
+on:
+  push:
+    branches: [main, trigger-vercel-deploy]
+  workflow_dispatch:
+
+jobs:
+  no-deploy-target:
+    if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/trigger-vercel-deploy'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Branch has no deploy target
+        run: |
+          echo "No Vercel deploy target configured for ${GITHUB_REF}."
+          echo "This is expected for feature/support branches."
+
+  deploy-preview:
+    if: github.ref == 'refs/heads/trigger-vercel-deploy'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger preview deploy hook
+        run: |
+          PREVIEW_HOOK_URL="${{ secrets.VERCEL_PREVIEW_DEPLOY_HOOK_URL }}"
+          if [ -z "$PREVIEW_HOOK_URL" ]; then
+            echo "VERCEL_PREVIEW_DEPLOY_HOOK_URL is not set. Skipping."
+          elif curl -fsS -m 20 --retry 2 --retry-delay 2 -X POST "$PREVIEW_HOOK_URL"; then
+            echo "Preview deploy hook triggered."
+          else
+            echo "Preview deploy hook failed (non-blocking). Check hook URL/permissions in repo secrets."
+          fi
+
+  deploy-production:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger production deploy hook
+        run: |
+          PRODUCTION_HOOK_URL="${{ secrets.VERCEL_PRODUCTION_DEPLOY_HOOK_URL }}"
+          if [ -z "$PRODUCTION_HOOK_URL" ]; then
+            echo "VERCEL_PRODUCTION_DEPLOY_HOOK_URL is not set. Skipping."
+          elif curl -fsS -m 20 --retry 2 --retry-delay 2 -X POST "$PRODUCTION_HOOK_URL"; then
+            echo "Production deploy hook triggered."
+          else
+            echo "Production deploy hook failed (non-blocking). Check hook URL/permissions in repo secrets."
+          fi
