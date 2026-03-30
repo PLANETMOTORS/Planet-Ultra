@@ -23,6 +23,7 @@ Production target: `www.planetmotors.ca`
 8. `docs/A0-Developer-Package/8-Planet_Ultra_DEC_Package.md`
 9. `docs/A0-Developer-Package/9-Planet_Ultra_Developer_Handoff_Checklist.md`
 10. `docs/A0-Developer-Package/10-Planet_Ultra_A6_Target_Architecture_Adoption.md`
+11. `docs/A0-Developer-Package/11-Planet_Ultra_Master_Execution_Board.md`
 
 ## Mandatory A5 Rules
 - Strict status language: `PASS`, `PARTIAL`, `IN_PROGRESS`, `OPEN`.
@@ -44,3 +45,7 @@ Production target: `www.planetmotors.ca`
 ## A6 Preparation
 - A6 execution input file is now added and ready for planning:
   - `docs/A0-Developer-Package/10-Planet_Ultra_A6_Target_Architecture_Adoption.md`
+
+## Startup Board
+- Active execution tracker:
+  - `docs/A0-Developer-Package/11-Planet_Ultra_Master_Execution_Board.md`
