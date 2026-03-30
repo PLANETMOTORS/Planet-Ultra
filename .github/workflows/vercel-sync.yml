@@ -12,7 +12,13 @@ jobs:
     steps:
       - name: Trigger preview deploy hook
         if: ${{ secrets.VERCEL_PREVIEW_DEPLOY_HOOK_URL != '' }}
-        run: curl -fsS -X POST "${{ secrets.VERCEL_PREVIEW_DEPLOY_HOOK_URL }}"
+        run: |
+          echo "Triggering Vercel preview deploy hook..."
+          if curl -fsS -m 20 --retry 2 --retry-delay 2 -X POST "${{ secrets.VERCEL_PREVIEW_DEPLOY_HOOK_URL }}"; then
+            echo "Preview deploy hook triggered."
+          else
+            echo "Preview deploy hook failed (non-blocking). Check hook URL/permissions in repo secrets."
+          fi
 
       - name: Preview deploy hook missing
         if: ${{ secrets.VERCEL_PREVIEW_DEPLOY_HOOK_URL == '' }}
@@ -24,7 +30,13 @@ jobs:
     steps:
       - name: Trigger production deploy hook
         if: ${{ secrets.VERCEL_PRODUCTION_DEPLOY_HOOK_URL != '' }}
-        run: curl -fsS -X POST "${{ secrets.VERCEL_PRODUCTION_DEPLOY_HOOK_URL }}"
+        run: |
+          echo "Triggering Vercel production deploy hook..."
+          if curl -fsS -m 20 --retry 2 --retry-delay 2 -X POST "${{ secrets.VERCEL_PRODUCTION_DEPLOY_HOOK_URL }}"; then
+            echo "Production deploy hook triggered."
+          else
+            echo "Production deploy hook failed (non-blocking). Check hook URL/permissions in repo secrets."
+          fi
 
       - name: Production deploy hook missing
         if: ${{ secrets.VERCEL_PRODUCTION_DEPLOY_HOOK_URL == '' }}
