@@ -6,6 +6,15 @@ on:
   workflow_dispatch:
 
 jobs:
+  no-deploy-target:
+    if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/trigger-vercel-deploy'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Branch has no deploy target
+        run: |
+          echo "No Vercel deploy target configured for ${GITHUB_REF}."
+          echo "This is expected for feature/support branches."
+
   deploy-preview:
     if: github.ref == 'refs/heads/trigger-vercel-deploy'
     runs-on: ubuntu-latest
