@@ -1,11 +1,24 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const CANONICAL_VDP_PAGE =
-  '/Users/tonisultzberg@icloud.com/Desktop/CURSOR-PLANET/Planet-Ultra-merge-final/app/inventory/used/[make]/[model]/[slug]/page.tsx';
-const HELPER_VDP_PAGE =
-  '/Users/tonisultzberg@icloud.com/Desktop/CURSOR-PLANET/Planet-Ultra-merge-final/app/inventory/[slug]/page.tsx';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const repoRoot = path.resolve(__dirname, '..');
+
+const CANONICAL_VDP_PAGE = path.join(
+  repoRoot,
+  'app',
+  'inventory',
+  'used',
+  '[make]',
+  '[model]',
+  '[slug]',
+  'page.tsx',
+);
+const HELPER_VDP_PAGE = path.join(repoRoot, 'app', 'inventory', '[slug]', 'page.tsx');
 
 test('canonical VDP generateMetadata delegates to buildVehicleMetadata', () => {
   const source = fs.readFileSync(CANONICAL_VDP_PAGE, 'utf8');
