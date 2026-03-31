@@ -7,7 +7,7 @@ Single-page execution truth sheet for A1–A5 with strict PASS/FAIL evidence.
 - Environment: `dev.planetmotors.ca` (staging truth).
 - Production target: `www.planetmotors.ca` (later cutover).
 - Rule: no phase can be marked complete without runtime proof + dependency proof.
-- Current execution mode: `A5 stabilization + extension` on existing codebase (no rewrite).
+- Current execution mode: `A5 stabilization + A6 P0 backend build` on existing codebase (no rewrite).
 
 ## A5 Pass/Fail Matrix (Strict)
 | Workstream | Status | Evidence Required to Close |
@@ -22,6 +22,7 @@ Single-page execution truth sheet for A1–A5 with strict PASS/FAIL evidence.
 
 ## Known Critical Note
 - Saved-vehicles persistence is still fallback behavior when Neon is not fully provisioned. Without working Neon path, API returns safe empty/false responses and does not persist.
+- Inventory ingest rule is now explicit and enforced in importer code: every new HomeNet upload replaces current inventory snapshot; previous rows are wiped.
 
 ## A5 Operating Rule (March 27, 2026)
 1. Do not restart project from scratch.
@@ -37,6 +38,17 @@ Single-page execution truth sheet for A1–A5 with strict PASS/FAIL evidence.
   - `/api/finance/submit` returned `queued` on valid payload and validation errors on invalid payload.
   - `/api/purchase/submit` returned `Unauthorized` when unauthenticated.
   - `/api/saved-vehicles` returned `Unauthorized` when unauthenticated.
+
+## Latest Engineering Update (March 30, 2026)
+- A6 branch in execution: `codex/a6-backend-p0-inventory-dealertrack`.
+- Added HomeNet full-replace importer pipeline:
+  - `db/migrations/002_inventory_feed_snapshot.sql`
+  - `scripts/import-homenet-inventory.mjs`
+  - `docs/inventory-import-rule.md`
+- Inventory runtime now reads snapshot data:
+  - `/inventory`
+  - `/inventory/[slug]`
+  - `/inventory/used/[make]/[model]/[slug]`
 
 ## Required Exit Evidence Format
 - Code gate: `lint`, `typecheck`, `build`.

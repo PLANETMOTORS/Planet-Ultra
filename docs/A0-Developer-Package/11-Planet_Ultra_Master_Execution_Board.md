@@ -67,6 +67,20 @@ Rule: No item moves to `PASS` without linked runtime evidence.
 3. Deliver first ingest reconciliation report for P0-02.
 4. Publish initial observability alerts for P0-08.
 
+## Applied Add-Ons (March 30, 2026)
+- A6 backend execution branch created: `codex/a6-backend-p0-inventory-dealertrack`.
+- P0-02 implementation baseline added:
+  - `db/migrations/002_inventory_feed_snapshot.sql`
+  - `scripts/import-homenet-inventory.mjs`
+  - `lib/inventory/repository.ts`
+- Runtime wiring started:
+  - `/inventory` now reads live snapshot rows.
+  - `/inventory/[slug]` now resolves canonical VDP from inventory snapshot.
+  - `/inventory/used/[make]/[model]/[slug]` now reads DB by slug (fixture removed).
+- Inventory rule locked:
+  - Every HomeNet import is full-replace (`TRUNCATE + INSERT`).
+  - Previous inventory rows are not retained in `inventory_vehicles`.
+
 ## Non-Negotiable Rules
 - One workstream per branch/PR.
 - No completion claims without evidence links.
