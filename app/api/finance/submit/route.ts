@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import { submitFinanceApplication } from '@/lib/finance/submissionBoundary';
 import { dispatchCrmEventWithReceipt, buildFinanceLeadEvent } from '@/lib/crm/autoraptor';
+import { checkRateLimit, buildRateLimitedResponse } from '@/lib/security/rateLimit';
 import type { FinanceApplicationPayload } from '@/types/a5';
 
 /**
@@ -44,6 +45,14 @@ const FinanceSubmitSchema = z.object({
 export async function POST(req: NextRequest) {
   // Resolve session — optional for finance applications
   const { userId } = await auth();
+  const rateDecision = await checkRateLimit(
+    req,
+    { name: 'finance_submit', limit: 5, windowSeconds: 60 },
+    { userId },
+  );
+  if (!rateDecision.allowed) {
+    return buildRateLimitedResponse(rateDecision);
+  }
 
   let body: unknown;
   try {

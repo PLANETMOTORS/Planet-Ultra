@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import { saveVehicle, unsaveVehicle, isVehicleSaved } from '@/lib/auth/savedVehicles';
+import { checkRateLimit, buildRateLimitedResponse } from '@/lib/security/rateLimit';
 
 /**
  * /api/saved-vehicles
@@ -38,6 +39,14 @@ export async function POST(req: NextRequest) {
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  const rateDecision = await checkRateLimit(
+    req,
+    { name: 'saved_vehicles_write', limit: 30, windowSeconds: 60 },
+    { userId },
+  );
+  if (!rateDecision.allowed) {
+    return buildRateLimitedResponse(rateDecision);
+  }
 
   let body: unknown;
   try {
@@ -67,6 +76,14 @@ export async function DELETE(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const rateDecision = await checkRateLimit(
+    req,
+    { name: 'saved_vehicles_write', limit: 30, windowSeconds: 60 },
+    { userId },
+  );
+  if (!rateDecision.allowed) {
+    return buildRateLimitedResponse(rateDecision);
   }
 
   const vehicleId = req.nextUrl.searchParams.get('vehicleId');
