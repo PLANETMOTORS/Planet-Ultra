@@ -87,9 +87,19 @@ export type FinanceSubmissionStatus =
 
 export interface FinanceSubmissionResult {
   status: FinanceSubmissionStatus;
+  submissionId?: string;
   referenceId?: string;
   message?: string;
 }
+
+export type FinanceLifecycleStatus =
+  | 'submitted'
+  | 'queued'
+  | 'forwarded'
+  | 'acknowledged'
+  | 'failed'
+  | 'retried'
+  | 'dead_letter';
 
 // ─── CRM / AutoRaptor ────────────────────────────────────────────────────────
 

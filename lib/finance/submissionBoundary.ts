@@ -14,6 +14,10 @@ import type {
   FinanceApplicationPayload,
   FinanceSubmissionResult,
 } from '@/types/a5';
+import {
+  createFinanceSubmission,
+  updateFinanceSubmissionState,
+} from '@/lib/finance/lifecycleStore';
 
 const ROUTEONE_ENABLED = process.env.ENABLE_ROUTEONE === '1';
 const DEALERTRACK_ENABLED = process.env.ENABLE_DEALERTRACK === '1';
@@ -132,8 +136,11 @@ async function submitToDealertrack(
 export async function submitFinanceApplication(
   payload: FinanceApplicationPayload,
 ): Promise<FinanceSubmissionResult> {
+  const submissionId = await createFinanceSubmission(payload);
+
   // Log submission attempt without PII
   console.info('[finance/submit] Application received', {
+    submissionId,
     vehicleId: payload.vehicleId,
     vehicleSlug: payload.vehicleSlug,
     clerkUserId: payload.clerkUserId,
@@ -144,32 +151,93 @@ export async function submitFinanceApplication(
   if (ROUTEONE_ENABLED) {
     try {
       const referenceId = await submitToRouteOne(payload);
-      return { status: 'accepted', referenceId };
+      if (submissionId) {
+        await updateFinanceSubmissionState({
+          submissionId,
+          toStatus: 'forwarded',
+          eventType: 'finance.forwarded.routeone',
+          provider: 'routeone',
+          externalReference: referenceId,
+          incrementAttempt: true,
+          payload: { provider: 'routeone' },
+        });
+      }
+      return { status: 'accepted', submissionId: submissionId ?? undefined, referenceId };
     } catch (err) {
       console.error('[finance/submit] RouteOne failed:', (err as Error).message);
-      // Fall through to Dealertrack
+      if (submissionId) {
+        await updateFinanceSubmissionState({
+          submissionId,
+          toStatus: 'retried',
+          eventType: 'finance.retry.after_routeone_failure',
+          incrementAttempt: true,
+          message: (err as Error).message,
+          payload: { provider: 'routeone' },
+        });
+      }
+      // Fall through to Dealertrack.
     }
   }
 
   if (DEALERTRACK_ENABLED) {
     try {
       const referenceId = await submitToDealertrack(payload);
-      return { status: 'accepted', referenceId };
+      if (submissionId) {
+        await updateFinanceSubmissionState({
+          submissionId,
+          toStatus: 'forwarded',
+          eventType: 'finance.forwarded.dealertrack',
+          provider: 'dealertrack',
+          externalReference: referenceId,
+          incrementAttempt: true,
+          payload: { provider: 'dealertrack' },
+        });
+      }
+      return { status: 'accepted', submissionId: submissionId ?? undefined, referenceId };
     } catch (err) {
+      const message = (err as Error).message;
+      const maxAttempts = Number(process.env.FINANCE_MAX_ATTEMPTS ?? '3');
+      const deadLetter = maxAttempts <= 1;
+
+      if (submissionId) {
+        await updateFinanceSubmissionState({
+          submissionId,
+          toStatus: deadLetter ? 'dead_letter' : 'failed',
+          eventType: deadLetter
+            ? 'finance.dead_letter.dealertrack'
+            : 'finance.failed.dealertrack',
+          provider: 'dealertrack',
+          incrementAttempt: true,
+          message,
+          payload: { provider: 'dealertrack' },
+        });
+      }
+
       console.error(
         '[finance/submit] Dealertrack failed:',
-        (err as Error).message,
+        message,
       );
       return {
         status: 'failed',
+        submissionId: submissionId ?? undefined,
         message: 'Lender submission failed. Our team will follow up.',
       };
     }
   }
 
   // Both integrations off — return 'queued' for clean feature-flag behavior
+  if (submissionId) {
+    await updateFinanceSubmissionState({
+      submissionId,
+      toStatus: 'queued',
+      eventType: 'finance.queued.manual_review',
+      payload: { reason: 'no_provider_enabled' },
+    });
+  }
+
   return {
     status: 'queued',
+    submissionId: submissionId ?? undefined,
     message: 'Your application has been received. Our finance team will contact you shortly.',
   };
 }
