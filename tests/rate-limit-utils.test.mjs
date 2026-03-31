@@ -1,17 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const RATE_LIMIT_LIB =
-  '/Users/tonisultzberg@icloud.com/Desktop/CURSOR-PLANET/Planet-Ultra-merge-final/lib/security/rateLimit.ts';
-const FINANCE_ROUTE =
-  '/Users/tonisultzberg@icloud.com/Desktop/CURSOR-PLANET/Planet-Ultra-merge-final/app/api/finance/submit/route.ts';
-const PURCHASE_ROUTE =
-  '/Users/tonisultzberg@icloud.com/Desktop/CURSOR-PLANET/Planet-Ultra-merge-final/app/api/purchase/submit/route.ts';
-const SAVED_ROUTE =
-  '/Users/tonisultzberg@icloud.com/Desktop/CURSOR-PLANET/Planet-Ultra-merge-final/app/api/saved-vehicles/route.ts';
-const VIEWS_ROUTE =
-  '/Users/tonisultzberg@icloud.com/Desktop/CURSOR-PLANET/Planet-Ultra-merge-final/app/api/vehicle-views/route.ts';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const repoRoot = path.resolve(__dirname, '..');
+
+const RATE_LIMIT_LIB = path.join(repoRoot, 'lib', 'security', 'rateLimit.ts');
+const FINANCE_ROUTE = path.join(repoRoot, 'app', 'api', 'finance', 'submit', 'route.ts');
+const PURCHASE_ROUTE = path.join(repoRoot, 'app', 'api', 'purchase', 'submit', 'route.ts');
+const SAVED_ROUTE = path.join(repoRoot, 'app', 'api', 'saved-vehicles', 'route.ts');
+const VIEWS_ROUTE = path.join(repoRoot, 'app', 'api', 'vehicle-views', 'route.ts');
 
 test('rate limit utility returns 429 with Retry-After header', () => {
   const source = fs.readFileSync(RATE_LIMIT_LIB, 'utf8');
