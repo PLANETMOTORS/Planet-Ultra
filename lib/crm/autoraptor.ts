@@ -13,6 +13,7 @@
  */
 
 import type { CrmEventPayload, CrmDispatchResult } from '@/types/a5';
+import { createCrmDispatchLog, finalizeCrmDispatchLog } from '@/lib/crm/dispatchStore';
 
 const AUTORAPTOR_ENABLED = process.env.ENABLE_AUTORAPTOR === '1';
 
@@ -72,7 +73,7 @@ export async function dispatchCrmEvent(
       vehicleId: event.vehicleId,
       occurredAt: event.occurredAt,
     });
-    return { status: 'disabled', eventType: event.eventType };
+    return { status: 'disabled', eventType: event.eventType, attempts: 0, provider: 'autoraptor' };
   }
 
   const apiUrl = process.env.AUTORAPTOR_API_URL;
@@ -80,7 +81,13 @@ export async function dispatchCrmEvent(
 
   if (!apiUrl || !apiKey) {
     console.error('[crm/autoraptor] Missing env configuration');
-    return { status: 'error', eventType: event.eventType, error: 'Missing configuration' };
+    return {
+      status: 'error',
+      eventType: event.eventType,
+      error: 'Missing configuration',
+      attempts: 0,
+      provider: 'autoraptor',
+    };
   }
 
   const body = buildAutoraptorPayload(event);
@@ -110,6 +117,8 @@ export async function dispatchCrmEvent(
           status: 'sent',
           eventType: event.eventType,
           referenceId: data.id,
+          attempts: attempt + 1,
+          provider: 'autoraptor',
         };
       }
 
@@ -131,7 +140,29 @@ export async function dispatchCrmEvent(
     error: lastError,
   });
 
-  return { status: 'error', eventType: event.eventType, error: lastError };
+  return {
+    status: 'error',
+    eventType: event.eventType,
+    error: lastError,
+    attempts: 2,
+    provider: 'autoraptor',
+  };
+}
+
+/**
+ * Dispatch wrapper with persistent delivery receipt logging.
+ * Source should identify caller path, e.g. "api.finance.submit".
+ */
+export async function dispatchCrmEventWithReceipt(
+  source: string,
+  event: CrmEventPayload,
+): Promise<CrmDispatchResult> {
+  const dispatchLogId = await createCrmDispatchLog({ source, event });
+  const result = await dispatchCrmEvent(event);
+  if (dispatchLogId) {
+    await finalizeCrmDispatchLog({ id: dispatchLogId, result });
+  }
+  return result;
 }
 
 /**

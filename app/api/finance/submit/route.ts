@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import { submitFinanceApplication } from '@/lib/finance/submissionBoundary';
-import { dispatchCrmEvent, buildFinanceLeadEvent } from '@/lib/crm/autoraptor';
+import { dispatchCrmEventWithReceipt, buildFinanceLeadEvent } from '@/lib/crm/autoraptor';
 import type { FinanceApplicationPayload } from '@/types/a5';
 
 /**
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     const result = await submitFinanceApplication(payload);
 
     // Dispatch CRM finance lead event — fire-and-forget, non-blocking
-    dispatchCrmEvent(buildFinanceLeadEvent({
+    dispatchCrmEventWithReceipt('api.finance.submit', buildFinanceLeadEvent({
       vehicleId: parsed.data.vehicleId,
       vehicleSlug: parsed.data.vehicleSlug,
       vehicleYear: parsed.data.vehicleYear,

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import { createDepositSession } from '@/lib/stripe/depositIntent';
-import { dispatchCrmEvent, buildDepositEvent } from '@/lib/crm/autoraptor';
+import { dispatchCrmEventWithReceipt, buildDepositEvent } from '@/lib/crm/autoraptor';
 
 /**
  * POST /api/purchase/submit
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Dispatch CRM deposit event — fire-and-forget, non-blocking
-    dispatchCrmEvent(buildDepositEvent({
+    dispatchCrmEventWithReceipt('api.purchase.submit', buildDepositEvent({
       vehicleId: parsed.data.vehicleId,
       vehicleSlug: parsed.data.vehicleSlug,
       vehicleYear: parsed.data.vehicleYear,

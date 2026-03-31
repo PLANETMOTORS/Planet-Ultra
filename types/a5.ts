@@ -132,6 +132,8 @@ export interface CrmDispatchResult {
   eventType: CrmEventType;
   referenceId?: string;
   error?: string;
+  attempts?: number;
+  provider?: 'autoraptor';
 }
 
 // ─── Social Proof / Vehicle Views ────────────────────────────────────────────
