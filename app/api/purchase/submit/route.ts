@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import { createDepositSession } from '@/lib/stripe/depositIntent';
 import { dispatchCrmEventWithReceipt, buildDepositEvent } from '@/lib/crm/autoraptor';
+import { checkRateLimit, buildRateLimitedResponse } from '@/lib/security/rateLimit';
 
 /**
  * POST /api/purchase/submit
@@ -33,6 +34,14 @@ export async function POST(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const rateDecision = await checkRateLimit(
+    req,
+    { name: 'purchase_submit', limit: 5, windowSeconds: 60 },
+    { userId },
+  );
+  if (!rateDecision.allowed) {
+    return buildRateLimitedResponse(rateDecision);
   }
 
   let body: unknown;
