@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "inventory:import:homenet": "node scripts/import-homenet-inventory.mjs",
-    "inventory:import:homenet:file": "node scripts/import-homenet-inventory.mjs"
+    "inventory:import:homenet:file": "node scripts/import-homenet-inventory.mjs",
+    "ops:reconcile": "node scripts/reconcile-runtime-health.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.0.6",
