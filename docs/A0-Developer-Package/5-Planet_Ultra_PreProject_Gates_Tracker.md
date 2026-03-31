@@ -17,6 +17,7 @@ Use this tracker weekly. A gate is PASS only with objective evidence.
 | G-10 | Route Reliability | All public routes return expected status codes | QA | route matrix test | PASS |
 | G-11 | Observability | Error reporting/alerts enabled for prod-critical APIs | SRE | alert policy + sample alert | OPEN |
 | G-12 | Release Readiness | Rollback steps documented and tested | PM + Eng | rollback runbook | OPEN |
+| G-13 | Inventory Replace Rule | HomeNet imports must replace current inventory (no historical carry-over) | Backend Eng | importer code + SQL evidence + row-count proof | IN_PROGRESS |
 
 ## Scoring Model
 - Gate score = `PASS = 1`; all other statuses (`IN_PROGRESS`, `OPEN`, `PARTIAL`) = `0`.
@@ -42,3 +43,14 @@ Use this tracker weekly. A gate is PASS only with objective evidence.
   - G-06 Stripe Runtime (`IN_PROGRESS`)
   - G-09 Webhook Security (`IN_PROGRESS`)
   - G-11 Observability (`IN_PROGRESS`)
+  - G-13 Inventory Replace Rule (`IN_PROGRESS`)
+
+## Add-On Update (March 30, 2026)
+- Inventory replacement ingestion baseline added:
+  - `db/migrations/002_inventory_feed_snapshot.sql`
+  - `scripts/import-homenet-inventory.mjs`
+  - `docs/inventory-import-rule.md`
+- Acceptance rule for G-13:
+  - Run importer twice with different CSV counts.
+  - Verify table count equals latest file only.
+  - Verify previous file rows are absent after second import.
