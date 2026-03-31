@@ -2,18 +2,15 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { neon } from '@neondatabase/serverless';
+import { summarizeMismatchCounters } from './reconcile-runtime-health-utils.mjs';
 
 function nowIso() {
   return new Date().toISOString();
 }
 
-function toInt(value) {
-  return Number.parseInt(String(value ?? 0), 10) || 0;
-}
-
 async function scalar(sql, query) {
   const rows = await sql.query(query);
-  return toInt(rows?.[0]?.count);
+  return Number.parseInt(String(rows?.[0]?.count ?? 0), 10) || 0;
 }
 
 async function buildReport(sql) {
@@ -69,17 +66,14 @@ async function buildReport(sql) {
     ),
   };
 
-  const criticalMismatchCount = Object.values(mismatches).reduce(
-    (acc, value) => acc + toInt(value),
-    0,
-  );
+  const summary = summarizeMismatchCounters(mismatches);
 
   return {
     generatedAt: nowIso(),
     totals,
-    mismatches,
-    criticalMismatchCount,
-    verdict: criticalMismatchCount === 0 ? 'PASS' : 'FAIL',
+    mismatches: summary.mismatches,
+    criticalMismatchCount: summary.criticalMismatchCount,
+    verdict: summary.verdict,
   };
 }
 
@@ -113,4 +107,3 @@ main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
-
