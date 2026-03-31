@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { beginWebhookEvent, completeWebhookEvent } from '@/lib/webhooks/eventStore';
 
 /**
  * POST /api/webhooks/stripe
@@ -13,6 +14,7 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 
 interface StripeEvent {
+  id: string;
   type: string;
   data: { object: Record<string, unknown> };
 }
@@ -50,24 +52,51 @@ export async function POST(req: NextRequest) {
 
   console.info('[webhook/stripe] Event received', { type: event.type });
 
-  switch (event.type) {
-    case 'checkout.session.completed': {
-      const session = event.data.object;
-      const vehicleId = (session['metadata'] as Record<string, string> | undefined)?.vehicleId;
-      const clerkUserId = (session['metadata'] as Record<string, string> | undefined)?.clerkUserId;
-      console.info('[webhook/stripe] Deposit completed', { vehicleId, clerkUserId });
-      // Future: mark vehicle as reserved in Postgres, dispatch CRM deposit event
-      break;
+  const eventId = event.id;
+  const eventStoreResult = await beginWebhookEvent({
+    provider: 'stripe',
+    eventId,
+    eventType: event.type,
+    payload: event.data.object,
+  });
+
+  if (eventStoreResult === 'duplicate') {
+    return NextResponse.json({ received: true, duplicate: true }, { status: 200 });
+  }
+
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        const vehicleId = (session['metadata'] as Record<string, string> | undefined)?.vehicleId;
+        const clerkUserId = (session['metadata'] as Record<string, string> | undefined)?.clerkUserId;
+        console.info('[webhook/stripe] Deposit completed', { vehicleId, clerkUserId });
+        // Future: mark vehicle as reserved in Postgres, dispatch CRM deposit event
+        break;
+      }
+      case 'checkout.session.expired': {
+        const session = event.data.object;
+        const vehicleId = (session['metadata'] as Record<string, string> | undefined)?.vehicleId;
+        console.info('[webhook/stripe] Deposit session expired', { vehicleId });
+        // Future: release any pending hold on the vehicle
+        break;
+      }
+      default:
+        break;
     }
-    case 'checkout.session.expired': {
-      const session = event.data.object;
-      const vehicleId = (session['metadata'] as Record<string, string> | undefined)?.vehicleId;
-      console.info('[webhook/stripe] Deposit session expired', { vehicleId });
-      // Future: release any pending hold on the vehicle
-      break;
-    }
-    default:
-      break;
+    await completeWebhookEvent({
+      provider: 'stripe',
+      eventId,
+      success: true,
+    });
+  } catch (err) {
+    await completeWebhookEvent({
+      provider: 'stripe',
+      eventId,
+      success: false,
+      errorMessage: (err as Error).message,
+    });
+    throw err;
   }
 
   return NextResponse.json({ received: true }, { status: 200 });

@@ -17,6 +17,7 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 
 import { revalidatePath } from 'next/cache';
+import { beginWebhookEvent, completeWebhookEvent } from '@/lib/webhooks/eventStore';
 
 interface SanityWebhookBody {
   _type?: string;
@@ -32,28 +33,59 @@ export async function POST(req: NextRequest) {
   }
 
   let body: SanityWebhookBody;
+  let rawBody = '';
   try {
-    body = (await req.json()) as SanityWebhookBody;
+    rawBody = await req.text();
+    body = JSON.parse(rawBody) as SanityWebhookBody;
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
   const docType = body._type ?? 'unknown';
+  const eventId =
+    req.headers.get('x-sanity-event-id') ??
+    `${docType}:${body.slug?.current ?? 'no-slug'}:${rawBody.length}`;
+
+  const eventStoreResult = await beginWebhookEvent({
+    provider: 'sanity',
+    eventId,
+    eventType: `sanity.${docType}`,
+    payload: body as Record<string, unknown>,
+  });
+  if (eventStoreResult === 'duplicate') {
+    return NextResponse.json({ revalidated: true, duplicate: true, docType }, { status: 200 });
+  }
+
   console.info('[webhook/sanity] Revalidation triggered', { docType });
 
-  switch (docType) {
-    case 'siteSettings':
-    case 'navigation':
-    case 'footer':
-    case 'homePage':
-      revalidatePath('/');
-      break;
-    case 'vehicle':
-      revalidatePath('/inventory');
-      revalidatePath('/sitemap.xml');
-      break;
-    default:
-      break;
+  try {
+    switch (docType) {
+      case 'siteSettings':
+      case 'navigation':
+      case 'footer':
+      case 'homePage':
+        revalidatePath('/');
+        break;
+      case 'vehicle':
+        revalidatePath('/inventory');
+        revalidatePath('/sitemap.xml');
+        break;
+      default:
+        break;
+    }
+    await completeWebhookEvent({
+      provider: 'sanity',
+      eventId,
+      success: true,
+    });
+  } catch (err) {
+    await completeWebhookEvent({
+      provider: 'sanity',
+      eventId,
+      success: false,
+      errorMessage: (err as Error).message,
+    });
+    throw err;
   }
 
   return NextResponse.json({ revalidated: true, docType }, { status: 200 });

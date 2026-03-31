@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Webhook } from 'svix';
+import { beginWebhookEvent, completeWebhookEvent } from '@/lib/webhooks/eventStore';
 
 /**
  * POST /api/webhooks/clerk
@@ -51,15 +52,41 @@ export async function POST(req: NextRequest) {
 
   console.info('[webhook/clerk] Event received', { type: event.type });
 
-  switch (event.type) {
-    case 'user.created':
-      // Future: initialize user record in Postgres
-      break;
-    case 'user.deleted':
-      // Future: cascade-delete saved_vehicles for this user
-      break;
-    default:
-      break;
+  const eventStoreResult = await beginWebhookEvent({
+    provider: 'clerk',
+    eventId: svixId,
+    eventType: event.type,
+    payload: event.data,
+  });
+
+  if (eventStoreResult === 'duplicate') {
+    return NextResponse.json({ received: true, duplicate: true }, { status: 200 });
+  }
+
+  try {
+    switch (event.type) {
+      case 'user.created':
+        // Future: initialize user record in Postgres
+        break;
+      case 'user.deleted':
+        // Future: cascade-delete saved_vehicles for this user
+        break;
+      default:
+        break;
+    }
+    await completeWebhookEvent({
+      provider: 'clerk',
+      eventId: svixId,
+      success: true,
+    });
+  } catch (err) {
+    await completeWebhookEvent({
+      provider: 'clerk',
+      eventId: svixId,
+      success: false,
+      errorMessage: (err as Error).message,
+    });
+    throw err;
   }
 
   return NextResponse.json({ received: true }, { status: 200 });
