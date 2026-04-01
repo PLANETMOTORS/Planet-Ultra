@@ -11,7 +11,7 @@
     "start": "next start",
     "test": "node --test tests/*.test.mjs",
     "lint": "eslint .",
-    "typecheck": "rm -rf .next/types && next typegen && tsc --noEmit",
+    "typecheck": "rm -rf .next && next typegen && tsc --noEmit",
     "inventory:import:homenet": "node scripts/import-homenet-inventory.mjs",
     "inventory:import:homenet:file": "node scripts/import-homenet-inventory.mjs",
     "ops:reconcile": "node scripts/reconcile-runtime-health.mjs"
