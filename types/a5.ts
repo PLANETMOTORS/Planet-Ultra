@@ -46,7 +46,18 @@ export interface DepositIntentResult {
   publishableKey: string;
   vehicleId: string;
   amountCents: number;
+  purchaseSubmissionId?: string;
 }
+
+export type PurchaseLifecycleStatus =
+  | 'initiated'
+  | 'checkout_created'
+  | 'paid'
+  | 'expired'
+  | 'cancelled'
+  | 'return_requested'
+  | 'refund_pending'
+  | 'refunded';
 
 // ─── Finance Submission ──────────────────────────────────────────────────────
 
