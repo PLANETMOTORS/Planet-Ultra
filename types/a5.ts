@@ -59,6 +59,14 @@ export type PurchaseLifecycleStatus =
   | 'refund_pending'
   | 'refunded';
 
+export type DeliveryLifecycleStatus =
+  | 'scheduled'
+  | 'confirmed'
+  | 'in_transit'
+  | 'delivered'
+  | 'failed'
+  | 'cancelled';
+
 // ─── Finance Submission ──────────────────────────────────────────────────────
 
 /**
@@ -171,6 +179,7 @@ export type WebhookNamespace =
   | 'autoraptor'
   | 'dealertrack'
   | 'routeone'
+  | 'delivery'
   | 'sanity';
 
 export type WebhookStatus = 'active' | 'stub';

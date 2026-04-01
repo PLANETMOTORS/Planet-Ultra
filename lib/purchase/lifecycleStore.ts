@@ -195,17 +195,29 @@ export async function updatePurchaseByStripeSession(args: {
 export async function getPurchaseSubmissionForUser(args: {
   submissionId: string;
   clerkUserId: string;
-}): Promise<{ id: string; status: PurchaseLifecycleStatus; return_deadline_at: string | null } | null> {
+}): Promise<{
+  id: string;
+  status: PurchaseLifecycleStatus;
+  return_deadline_at: string | null;
+  vehicle_id: string;
+  vehicle_slug: string;
+} | null> {
   const sql = getSql();
   if (!sql) return null;
 
   const rows = (await sql.query(
-    `SELECT id, status, return_deadline_at
+    `SELECT id, status, return_deadline_at, vehicle_id, vehicle_slug
      FROM purchase_submissions
      WHERE id = $1 AND clerk_user_id = $2
      LIMIT 1`,
     [args.submissionId, args.clerkUserId],
-  )) as Array<{ id: string; status: PurchaseLifecycleStatus; return_deadline_at: string | null }>;
+  )) as Array<{
+    id: string;
+    status: PurchaseLifecycleStatus;
+    return_deadline_at: string | null;
+    vehicle_id: string;
+    vehicle_slug: string;
+  }>;
 
   return rows[0] ?? null;
 }
