@@ -118,6 +118,32 @@ export async function getInventoryVehicleBySlug(slug: string): Promise<Vehicle |
   return rowToVehicle(rows[0]);
 }
 
+/**
+ * Resolves a vehicle by both ID (VIN) and slug.
+ * Both references must point to the same record.
+ */
+export async function getInventoryVehicleByReference(
+  vehicleId: string,
+  vehicleSlug: string,
+): Promise<Vehicle | null> {
+  const sql = getSql();
+  if (!sql) return null;
+
+  const rows = (await sql.query(
+    `SELECT
+      slug, vin, stock, year, make, model, trim, vehicle_type, drivetrain, fuel_type,
+      transmission, mileage_km, exterior_color, interior_color, selling_price_cad,
+      status, imported_at
+     FROM inventory_vehicles
+     WHERE vin = $1 AND slug = $2
+     LIMIT 1`,
+    [vehicleId, vehicleSlug],
+  )) as InventoryVehicleRow[];
+
+  if (rows.length === 0) return null;
+  return rowToVehicle(rows[0]);
+}
+
 export async function resolveInventoryCanonicalPathBySlug(slug: string): Promise<string | null> {
   const vehicle = await getInventoryVehicleBySlug(slug);
   if (!vehicle) return null;
