@@ -6,8 +6,13 @@ on:
   push:
     branches: ['**']
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   quality:
+    if: ${{ !(github.event_name == 'pull_request' && github.head_ref == 'trigger-vercel-deploy') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
