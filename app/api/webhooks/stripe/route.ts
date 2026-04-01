@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { beginWebhookEvent, completeWebhookEvent } from '@/lib/webhooks/eventStore';
+import { updatePurchaseByStripeSession } from '@/lib/purchase/lifecycleStore';
 
 /**
  * POST /api/webhooks/stripe
@@ -70,15 +71,47 @@ export async function POST(req: NextRequest) {
         const session = event.data.object;
         const vehicleId = (session['metadata'] as Record<string, string> | undefined)?.vehicleId;
         const clerkUserId = (session['metadata'] as Record<string, string> | undefined)?.clerkUserId;
+        const stripeSessionId = typeof session['id'] === 'string' ? session['id'] : null;
         console.info('[webhook/stripe] Deposit completed', { vehicleId, clerkUserId });
-        // Future: mark vehicle as reserved in Postgres, dispatch CRM deposit event
+        if (stripeSessionId) {
+          await updatePurchaseByStripeSession({
+            stripeSessionId,
+            toStatus: 'paid',
+            eventType: 'purchase.paid.stripe_webhook',
+            payload: { eventType: event.type, vehicleId, clerkUserId },
+          });
+        }
         break;
       }
       case 'checkout.session.expired': {
         const session = event.data.object;
         const vehicleId = (session['metadata'] as Record<string, string> | undefined)?.vehicleId;
+        const stripeSessionId = typeof session['id'] === 'string' ? session['id'] : null;
         console.info('[webhook/stripe] Deposit session expired', { vehicleId });
-        // Future: release any pending hold on the vehicle
+        if (stripeSessionId) {
+          await updatePurchaseByStripeSession({
+            stripeSessionId,
+            toStatus: 'expired',
+            eventType: 'purchase.expired.stripe_webhook',
+            payload: { eventType: event.type, vehicleId },
+          });
+        }
+        break;
+      }
+      case 'charge.refunded': {
+        const charge = event.data.object;
+        const stripeSessionId =
+          typeof charge['metadata'] === 'object' && charge['metadata'] !== null
+            ? (charge['metadata'] as Record<string, string>)['checkout_session_id'] ?? null
+            : null;
+        if (stripeSessionId) {
+          await updatePurchaseByStripeSession({
+            stripeSessionId,
+            toStatus: 'refunded',
+            eventType: 'purchase.refunded.stripe_webhook',
+            payload: { eventType: event.type },
+          });
+        }
         break;
       }
       default:

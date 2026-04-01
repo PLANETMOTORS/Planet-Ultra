@@ -22,7 +22,7 @@ Rule: No item moves to `PASS` without linked runtime evidence.
 | P0-12 | P0 | Gate discipline (proof-only closure) | PM + Eng Lead | BlueSheet + Gate Tracker links | IN_PROGRESS |
 | P0-13 | P0 | Trade-in end-to-end | Product Eng Lead | offer/accept/inspect/complete proof | OPEN |
 | P0-14 | P0 | Delivery lifecycle end-to-end | Ops + Backend | slot/tracking/status proofs | OPEN |
-| P0-15 | P0 | 10-day return/refund workflow | Payments + Ops | return + refund settlement evidence | OPEN |
+| P0-15 | P0 | 10-day return/refund workflow | Payments + Ops | return + refund settlement evidence | IN_PROGRESS |
 | P1-16 | P1 | Saved searches + alerts | Frontend + Backend | create/update/notify proof | OPEN |
 | P1-17 | P1 | Event contract registry + taxonomy | Platform Lead | versioned schemas + compatibility tests | OPEN |
 | P1-18 | P1 | Data retention/deletion automation | Compliance Eng | SAR/delete run evidence | OPEN |
@@ -80,6 +80,12 @@ Rule: No item moves to `PASS` without linked runtime evidence.
 - Inventory rule locked:
   - Every HomeNet import is full-replace (`TRUNCATE + INSERT`).
   - Previous inventory rows are not retained in `inventory_vehicles`.
+- P0-15 lifecycle baseline added:
+  - `db/migrations/006_purchase_lifecycle.sql`
+  - `lib/purchase/lifecycleStore.ts`
+  - `/api/purchase/submit` now persists lifecycle + Stripe session mapping
+  - `/api/webhooks/stripe` now updates paid/expired/refunded states in lifecycle store
+  - `/api/purchase/return` added for 10-day return request initiation
 
 ## Non-Negotiable Rules
 - One workstream per branch/PR.

@@ -5,6 +5,10 @@ import { createDepositSession } from '@/lib/stripe/depositIntent';
 import { dispatchCrmEventWithReceipt, buildDepositEvent } from '@/lib/crm/autoraptor';
 import { checkRateLimit, buildRateLimitedResponse } from '@/lib/security/rateLimit';
 import { getInventoryVehicleByReference } from '@/lib/inventory/repository';
+import {
+  createPurchaseSubmission,
+  markPurchaseCheckoutCreated,
+} from '@/lib/purchase/lifecycleStore';
 
 /**
  * POST /api/purchase/submit
@@ -79,6 +83,20 @@ export async function POST(req: NextRequest) {
       clerkUserId: userId,
     });
 
+    const purchaseSubmissionId = await createPurchaseSubmission({
+      clerkUserId: userId,
+      vehicleId: verifiedVehicle.id,
+      vehicleSlug: verifiedVehicle.slug,
+      amountCents: result.amountCents,
+      metadata: { source: 'api.purchase.submit' },
+    });
+    if (purchaseSubmissionId) {
+      await markPurchaseCheckoutCreated({
+        submissionId: purchaseSubmissionId,
+        stripeSessionId: result.sessionId,
+      });
+    }
+
     // Dispatch CRM deposit event — fire-and-forget, non-blocking
     dispatchCrmEventWithReceipt('api.purchase.submit', buildDepositEvent({
       vehicleId: verifiedVehicle.id,
@@ -87,12 +105,19 @@ export async function POST(req: NextRequest) {
       vehicleMake: verifiedVehicle.make,
       vehicleModel: verifiedVehicle.model,
       clerkUserId: userId,
-      meta: { sessionId: result.sessionId, amountCents: result.amountCents },
+      meta: {
+        sessionId: result.sessionId,
+        amountCents: result.amountCents,
+        purchaseSubmissionId: purchaseSubmissionId ?? 'untracked',
+      },
     })).catch((err) => {
       console.error('[api/purchase/submit] CRM dispatch error:', (err as Error).message);
     });
 
-    return NextResponse.json(result, { status: 200 });
+    return NextResponse.json(
+      { ...result, purchaseSubmissionId: purchaseSubmissionId ?? undefined },
+      { status: 200 },
+    );
   } catch (err) {
     console.error('[api/purchase/submit] Error creating deposit session:', err);
     return NextResponse.json(
