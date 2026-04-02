@@ -13,7 +13,7 @@ Rule: A phase is `PASS (100%)` only with code + runtime + dependency evidence.
 | A3 | PASS | 100% | UI structure constraints preserved in current route shells | Continue no-regression policy |
 | A4 | PASS | 100% | Metadata/linkage verification tests PASS; A4 verification package present | Maintain SEO/media/runtime constraints |
 | A5 | PASS | 100% | Live evidence package validated (Auth, Neon CRUD, Stripe, Finance, CRM, Redis, Webhooks) | Keep A5 stable while shipping A6 |
-| A6 | IN_PROGRESS | 72% | P0 backend baseline shipped; full quality/debug run PASS; strict closeout tooling includes reconcile/P0-proof/CRM-proof/alerts/security | Close live DB/provider proof packs for P0-02/03/04/05/06/08/09/10/11/13/14/15 |
+| A6 | IN_PROGRESS | 76% | P0 backend baseline shipped; full quality/debug run PASS; strict closeout tooling includes reconcile/P0-proof/inventory-proof/CRM-proof/alerts/security | Close live DB/provider proof packs for P0-02/03/04/05/06/08/09/10/11/13/14/15 |
 | A7 | OPEN | 0% | Not started | Define scope and acceptance criteria |
 | A8 | OPEN | 0% | Not started | Define scope and acceptance criteria |
 | A9 | OPEN | 0% | Not started | Define scope and acceptance criteria |

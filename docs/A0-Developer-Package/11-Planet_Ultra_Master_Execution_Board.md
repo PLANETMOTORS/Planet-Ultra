@@ -117,7 +117,7 @@ Rule: No item moves to `PASS` without linked runtime evidence.
 ## Execution Update (April 2, 2026)
 - Full quality gate rerun completed:
   - `npm run ops:debug:full` => PASS
-  - tests `47/47` => PASS
+  - tests `52/52` => PASS
   - `lint/typecheck/build` => PASS
 - P0 proof scripts executed successfully in local safe mode:
   - `npm run ops:reconcile` => `NO_DATABASE`
@@ -132,6 +132,11 @@ Rule: No item moves to `PASS` without linked runtime evidence.
 - CRM evidence closeout tooling added:
   - `scripts/generate-crm-evidence.mjs` (`npm run ops:proof:crm`) for receipt/retry/dead-letter evidence.
   - `scripts/run-a6-closeout.mjs` now includes CRM evidence gate in the A6 closeout verdict.
+- Inventory ingest reliability + evidence tooling added:
+  - `db/migrations/010_inventory_import_runs.sql` for import run ledger + dead letters.
+  - `scripts/import-homenet-inventory.mjs` now records retries, skipped rows, and dead-letter entries.
+  - `scripts/generate-inventory-ingest-evidence.mjs` (`npm run ops:proof:inventory`) for P0-02 evidence.
+  - `scripts/run-a6-closeout.mjs` now includes inventory evidence gate in the A6 closeout verdict.
 
 ## Non-Negotiable Rules
 - One workstream per branch/PR.

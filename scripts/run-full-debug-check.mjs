@@ -78,6 +78,7 @@ function main() {
     'db/migrations/007_delivery_lifecycle.sql',
     'db/migrations/008_tradein_lifecycle.sql',
     'db/migrations/009_webhook_replay_attempts.sql',
+    'db/migrations/010_inventory_import_runs.sql',
   ]);
 
   run('npm', ['run', 'test']);

@@ -16,6 +16,7 @@ test('a6 closeout script requires database-backed evidence and emits artifacts',
   assert.match(source, /DATABASE_URL/);
   assert.match(source, /reconcile-runtime-health\.mjs/);
   assert.match(source, /generate-p0-proof-pack\.mjs/);
+  assert.match(source, /generate-inventory-ingest-evidence\.mjs/);
   assert.match(source, /generate-crm-evidence\.mjs/);
   assert.match(source, /check-ops-alerts\.mjs/);
   assert.match(source, /security-baseline-check\.mjs/);

@@ -37,7 +37,7 @@ Use this tracker weekly. A gate is PASS only with objective evidence.
 
 ## Latest Verification Snapshot (April 2, 2026)
 - G-02 PASS reconfirmed with `npm run ops:debug:full`:
-  - tests `47/47` PASS
+  - tests `52/52` PASS
   - `lint` PASS
   - `typecheck` PASS
   - `build` PASS
@@ -48,7 +48,8 @@ Use this tracker weekly. A gate is PASS only with objective evidence.
   - `npm run ops:alerts`
   - `npm run ops:security:check`
   - `npm run ops:proof:crm`
-  - `npm run ops:close:a6` now enforces reconcile + P0 proof + CRM proof + alerts + security checks for closeout.
+  - `npm run ops:proof:inventory`
+  - `npm run ops:close:a6` now enforces reconcile + P0 proof + inventory proof + CRM proof + alerts + security checks for closeout.
 
 ## Startup Update (March 30, 2026)
 - Execution started using master board:

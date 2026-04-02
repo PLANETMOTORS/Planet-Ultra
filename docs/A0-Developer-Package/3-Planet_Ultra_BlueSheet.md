@@ -63,7 +63,7 @@ Single-page execution truth sheet for A1–A5 with strict PASS/FAIL evidence.
 
 ## Latest Engineering Verification (April 2, 2026)
 - `npm run ops:debug:full` passed end-to-end.
-- Tests: `39/39` PASS.
+- Tests: `52/52` PASS.
 - `lint`, `typecheck`, `build`: PASS.
 - `ops:reconcile` and `ops:proof:p0`: returned safe `NO_DATABASE` snapshots in local env without `DATABASE_URL`.
 

@@ -14,6 +14,7 @@
     "typecheck": "rm -rf .next && next typegen && tsc --noEmit",
     "inventory:import:homenet": "node scripts/import-homenet-inventory.mjs",
     "inventory:import:homenet:file": "node scripts/import-homenet-inventory.mjs",
+    "ops:proof:inventory": "node scripts/generate-inventory-ingest-evidence.mjs",
     "ops:reconcile": "node scripts/reconcile-runtime-health.mjs",
     "ops:proof:p0": "node scripts/generate-p0-proof-pack.mjs",
     "ops:proof:crm": "node scripts/generate-crm-evidence.mjs",

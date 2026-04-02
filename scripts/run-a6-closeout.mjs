@@ -33,7 +33,14 @@ function writeMarkdown(filePath, lines) {
   fs.writeFileSync(filePath, `${lines.join('\n')}\n`, 'utf8');
 }
 
-function evaluate(reconcile, p0Proof, opsAlerts, securityBaseline, crmEvidence) {
+function evaluate(
+  reconcile,
+  p0Proof,
+  opsAlerts,
+  securityBaseline,
+  crmEvidence,
+  inventoryEvidence,
+) {
   const p0Verdict = p0Proof?.verdict ?? {};
   const requiredP0 = ['p0_03', 'p0_04', 'p0_05', 'p0_06'];
   const p0Checks = Object.fromEntries(
@@ -46,6 +53,7 @@ function evaluate(reconcile, p0Proof, opsAlerts, securityBaseline, crmEvidence) 
   const opsAlertsPass = opsAlerts?.verdict === 'PASS';
   const securityPass = securityBaseline?.verdict === 'PASS';
   const crmPass = crmEvidence?.verdict === 'PASS_CANDIDATE';
+  const inventoryPass = inventoryEvidence?.verdict === 'PASS_CANDIDATE';
 
   return {
     reconcilePass,
@@ -53,9 +61,15 @@ function evaluate(reconcile, p0Proof, opsAlerts, securityBaseline, crmEvidence) 
     opsAlertsPass,
     securityPass,
     crmPass,
+    inventoryPass,
     p0Checks,
     readyToCloseA6Core:
-      reconcilePass && p0AllPass && opsAlertsPass && securityPass && crmPass,
+      reconcilePass &&
+      p0AllPass &&
+      opsAlertsPass &&
+      securityPass &&
+      crmPass &&
+      inventoryPass,
   };
 }
 
@@ -73,6 +87,7 @@ function main() {
 
   const reconcilePath = path.join(outputDir, 'reconcile.json');
   const p0ProofPath = path.join(outputDir, 'p0-proof-pack.json');
+  const inventoryEvidencePath = path.join(outputDir, 'inventory-ingest-evidence.json');
   const crmEvidencePath = path.join(outputDir, 'crm-evidence.json');
   const opsAlertsPath = path.join(outputDir, 'ops-alerts.json');
   const securityPath = path.join(outputDir, 'security-baseline.json');
@@ -95,6 +110,12 @@ function main() {
     p0ProofPath,
     '--require-db',
   ]);
+  run('inventory evidence (strict, require-db)', process.execPath, [
+    'scripts/generate-inventory-ingest-evidence.mjs',
+    inventoryEvidencePath,
+    '--require-db',
+    '--strict',
+  ]);
   run('crm evidence (strict, require-db)', process.execPath, [
     'scripts/generate-crm-evidence.mjs',
     crmEvidencePath,
@@ -115,6 +136,7 @@ function main() {
 
   const reconcile = readJson(reconcilePath);
   const p0Proof = readJson(p0ProofPath);
+  const inventoryEvidence = readJson(inventoryEvidencePath);
   const crmEvidence = readJson(crmEvidencePath);
   const opsAlerts = readJson(opsAlertsPath);
   const securityBaseline = readJson(securityPath);
@@ -124,6 +146,7 @@ function main() {
     opsAlerts,
     securityBaseline,
     crmEvidence,
+    inventoryEvidence,
   );
 
   const summary = {
@@ -132,6 +155,7 @@ function main() {
     checks,
     reconcile,
     p0ProofVerdict: p0Proof.verdict,
+    inventoryEvidenceVerdict: inventoryEvidence.verdict,
     crmEvidenceVerdict: crmEvidence.verdict,
     opsAlertsVerdict: opsAlerts.verdict,
     securityVerdict: securityBaseline.verdict,
@@ -152,6 +176,7 @@ function main() {
     '',
     `- Reconciliation PASS: ${checks.reconcilePass ? 'YES' : 'NO'}`,
     `- P0 proof-pack PASS (03/04/05/06): ${checks.p0AllPass ? 'YES' : 'NO'}`,
+    `- Inventory evidence PASS: ${checks.inventoryPass ? 'YES' : 'NO'}`,
     `- CRM evidence PASS: ${checks.crmPass ? 'YES' : 'NO'}`,
     `- Ops alerts PASS: ${checks.opsAlertsPass ? 'YES' : 'NO'}`,
     `- Security baseline PASS: ${checks.securityPass ? 'YES' : 'NO'}`,
@@ -166,6 +191,7 @@ function main() {
     '',
     '## Controls Detail',
     '',
+    `- Inventory evidence verdict: ${inventoryEvidence.verdict}`,
     `- CRM evidence verdict: ${crmEvidence.verdict}`,
     `- Ops alerts verdict: ${opsAlerts.verdict}`,
     `- Security baseline verdict: ${securityBaseline.verdict}`,
@@ -174,6 +200,7 @@ function main() {
     '',
     `- ${reconcilePath}`,
     `- ${p0ProofPath}`,
+    `- ${inventoryEvidencePath}`,
     `- ${crmEvidencePath}`,
     `- ${opsAlertsPath}`,
     `- ${securityPath}`,
