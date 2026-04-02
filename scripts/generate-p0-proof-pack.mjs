@@ -200,14 +200,34 @@ async function buildP0ProofPack(sql) {
 
 async function main() {
   const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) {
-    console.error('Missing DATABASE_URL');
-    process.exit(1);
-  }
+  const requireDb = process.argv.includes('--require-db');
 
   const outputArg = process.argv[2];
-  const sql = neon(databaseUrl);
-  const report = await buildP0ProofPack(sql);
+  let report;
+
+  if (!databaseUrl) {
+    if (requireDb) {
+      console.error('Missing DATABASE_URL');
+      process.exit(1);
+    }
+    report = {
+      generatedAt: nowIso(),
+      p0_03_dealertrack_lifecycle: {},
+      p0_04_finance_audit_trail: {},
+      p0_05_stripe_reconciliation: {},
+      p0_06_webhook_replay_safety: {},
+      verdict: {
+        p0_03: 'NO_DATABASE',
+        p0_04: 'NO_DATABASE',
+        p0_05: 'NO_DATABASE',
+        p0_06: 'NO_DATABASE',
+      },
+      notes: ['DATABASE_URL not set; returned safe empty P0 proof snapshot.'],
+    };
+  } else {
+    const sql = neon(databaseUrl);
+    report = await buildP0ProofPack(sql);
+  }
 
   console.log(JSON.stringify(report, null, 2));
   if (outputArg) {

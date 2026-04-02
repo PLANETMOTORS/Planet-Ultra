@@ -110,6 +110,9 @@ Rule: No item moves to `PASS` without linked runtime evidence.
   - `/admin` protected route with allowlist auth (`ADMIN_CLERK_USER_IDS`)
   - `/api/admin/ops` admin-only operational snapshot endpoint
   - `lib/ops/adminSnapshot.ts` read-only dashboard data source (finance/webhooks/CRM recent rows)
+- Full A0-to-current debug tooling baseline added:
+  - `npm run ops:debug:full` verifies A0 package/docs/routes/migrations + quality/build gates
+  - Ops evidence scripts now support safe `NO_DATABASE` mode (unless `--require-db` is set)
 
 ## Non-Negotiable Rules
 - One workstream per branch/PR.

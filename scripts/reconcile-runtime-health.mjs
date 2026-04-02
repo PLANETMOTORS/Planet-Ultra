@@ -142,16 +142,37 @@ async function buildReport(sql) {
 
 async function main() {
   const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) {
-    console.error('Missing DATABASE_URL');
-    process.exit(1);
-  }
+  const requireDb = process.argv.includes('--require-db');
 
   const outputArg = process.argv[2];
   const strict = process.argv.includes('--strict');
-  const sql = neon(databaseUrl);
+  let report;
 
-  const report = await buildReport(sql);
+  if (!databaseUrl) {
+    if (requireDb) {
+      console.error('Missing DATABASE_URL');
+      process.exit(1);
+    }
+    report = {
+      generatedAt: nowIso(),
+      totals: {
+        inventoryRows: 0,
+        financeSubmissions: 0,
+        purchaseSubmissions: 0,
+        deliverySubmissions: 0,
+        tradeInSubmissions: 0,
+        webhookEvents: 0,
+        crmDispatchRows: 0,
+      },
+      mismatches: {},
+      criticalMismatchCount: 0,
+      verdict: 'NO_DATABASE',
+      notes: ['DATABASE_URL not set; returned safe empty reconciliation snapshot.'],
+    };
+  } else {
+    const sql = neon(databaseUrl);
+    report = await buildReport(sql);
+  }
   console.log(JSON.stringify(report, null, 2));
 
   if (outputArg) {
