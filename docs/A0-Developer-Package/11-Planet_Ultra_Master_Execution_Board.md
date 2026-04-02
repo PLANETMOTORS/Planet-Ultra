@@ -129,6 +129,9 @@ Rule: No item moves to `PASS` without linked runtime evidence.
   - `scripts/check-ops-alerts.mjs` (`npm run ops:alerts`) for threshold-based alert snapshots.
   - `scripts/security-baseline-check.mjs` (`npm run ops:security:check`) for secret/config posture checks.
   - `scripts/run-a6-closeout.mjs` now includes alerts + security gates in the A6 closeout verdict.
+- CRM evidence closeout tooling added:
+  - `scripts/generate-crm-evidence.mjs` (`npm run ops:proof:crm`) for receipt/retry/dead-letter evidence.
+  - `scripts/run-a6-closeout.mjs` now includes CRM evidence gate in the A6 closeout verdict.
 
 ## Non-Negotiable Rules
 - One workstream per branch/PR.

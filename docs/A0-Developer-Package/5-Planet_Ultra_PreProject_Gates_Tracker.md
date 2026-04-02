@@ -47,7 +47,8 @@ Use this tracker weekly. A gate is PASS only with objective evidence.
 - Observability/security evidence tooling added:
   - `npm run ops:alerts`
   - `npm run ops:security:check`
-  - `npm run ops:close:a6` now enforces reconcile + P0 proof + alerts + security checks for closeout.
+  - `npm run ops:proof:crm`
+  - `npm run ops:close:a6` now enforces reconcile + P0 proof + CRM proof + alerts + security checks for closeout.
 
 ## Startup Update (March 30, 2026)
 - Execution started using master board:
