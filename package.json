@@ -16,7 +16,8 @@
     "inventory:import:homenet:file": "node scripts/import-homenet-inventory.mjs",
     "ops:reconcile": "node scripts/reconcile-runtime-health.mjs",
     "ops:proof:p0": "node scripts/generate-p0-proof-pack.mjs",
-    "ops:debug:full": "node scripts/run-full-debug-check.mjs"
+    "ops:debug:full": "node scripts/run-full-debug-check.mjs",
+    "ops:close:a6": "node scripts/run-a6-closeout.mjs"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.0.6",

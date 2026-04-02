@@ -1,0 +1,146 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import process from 'node:process';
+import { spawnSync } from 'node:child_process';
+
+function timestampCompact() {
+  return new Date().toISOString().replace(/[:.]/g, '-');
+}
+
+function run(label, cmd, args) {
+  const pretty = `${cmd} ${args.join(' ')}`.trim();
+  console.log(`\n[run] ${label}`);
+  console.log(`$ ${pretty}`);
+  const result = spawnSync(cmd, args, {
+    cwd: process.cwd(),
+    stdio: 'inherit',
+    env: process.env,
+  });
+  if (result.status !== 0) {
+    throw new Error(`Command failed: ${pretty}`);
+  }
+}
+
+function readJson(filePath) {
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+function writeJson(filePath, payload) {
+  fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+}
+
+function writeMarkdown(filePath, lines) {
+  fs.writeFileSync(filePath, `${lines.join('\n')}\n`, 'utf8');
+}
+
+function evaluate(reconcile, p0Proof) {
+  const p0Verdict = p0Proof?.verdict ?? {};
+  const requiredP0 = ['p0_03', 'p0_04', 'p0_05', 'p0_06'];
+  const p0Checks = Object.fromEntries(
+    requiredP0.map((k) => [k, p0Verdict[k] === 'PASS_CANDIDATE']),
+  );
+  const p0AllPass = Object.values(p0Checks).every(Boolean);
+
+  const reconcilePass =
+    reconcile?.verdict === 'PASS' && Number(reconcile?.criticalMismatchCount ?? 1) === 0;
+
+  return {
+    reconcilePass,
+    p0AllPass,
+    p0Checks,
+    readyToCloseA6Core: reconcilePass && p0AllPass,
+  };
+}
+
+function main() {
+  if (!process.env.DATABASE_URL) {
+    console.error('Missing DATABASE_URL. A6 closeout requires live DB evidence.');
+    process.exit(1);
+  }
+
+  const outDirArg = process.argv[2];
+  const outputDir = path.resolve(
+    outDirArg || path.join('artifacts', `a6-closeout-${timestampCompact()}`),
+  );
+  fs.mkdirSync(outputDir, { recursive: true });
+
+  const reconcilePath = path.join(outputDir, 'reconcile.json');
+  const p0ProofPath = path.join(outputDir, 'p0-proof-pack.json');
+  const summaryPath = path.join(outputDir, 'a6-closeout-summary.json');
+  const summaryMdPath = path.join(outputDir, 'A6_CLOSEOUT_SUMMARY.md');
+
+  run('tests', 'npm', ['run', 'test']);
+  run('lint', 'npm', ['run', 'lint']);
+  run('typecheck', 'npm', ['run', 'typecheck']);
+  run('build', 'npm', ['run', 'build']);
+
+  run('reconcile (strict, require-db)', process.execPath, [
+    'scripts/reconcile-runtime-health.mjs',
+    reconcilePath,
+    '--require-db',
+    '--strict',
+  ]);
+  run('p0 proof-pack (require-db)', process.execPath, [
+    'scripts/generate-p0-proof-pack.mjs',
+    p0ProofPath,
+    '--require-db',
+  ]);
+
+  const reconcile = readJson(reconcilePath);
+  const p0Proof = readJson(p0ProofPath);
+  const checks = evaluate(reconcile, p0Proof);
+
+  const summary = {
+    generatedAt: new Date().toISOString(),
+    outputDir,
+    checks,
+    reconcile,
+    p0ProofVerdict: p0Proof.verdict,
+    notes: [
+      'readyToCloseA6Core=true means DB-backed technical evidence is complete for core A6 closure criteria.',
+      'Manual provider/browser evidence may still be required by governance docs before formal PASS sign-off.',
+    ],
+  };
+
+  writeJson(summaryPath, summary);
+  writeMarkdown(summaryMdPath, [
+    '# A6 Closeout Summary',
+    '',
+    `Generated: ${summary.generatedAt}`,
+    `Output Dir: ${outputDir}`,
+    '',
+    '## Automated Verdict',
+    '',
+    `- Reconciliation PASS: ${checks.reconcilePass ? 'YES' : 'NO'}`,
+    `- P0 proof-pack PASS (03/04/05/06): ${checks.p0AllPass ? 'YES' : 'NO'}`,
+    `- Ready to close A6 core: ${checks.readyToCloseA6Core ? 'YES' : 'NO'}`,
+    '',
+    '## P0 Detail',
+    '',
+    `- p0_03 (Dealertrack lifecycle): ${checks.p0Checks.p0_03 ? 'PASS_CANDIDATE' : 'IN_PROGRESS'}`,
+    `- p0_04 (Finance audit trail): ${checks.p0Checks.p0_04 ? 'PASS_CANDIDATE' : 'IN_PROGRESS'}`,
+    `- p0_05 (Stripe reconciliation): ${checks.p0Checks.p0_05 ? 'PASS_CANDIDATE' : 'IN_PROGRESS'}`,
+    `- p0_06 (Webhook replay safety): ${checks.p0Checks.p0_06 ? 'PASS_CANDIDATE' : 'IN_PROGRESS'}`,
+    '',
+    '## Artifacts',
+    '',
+    `- ${reconcilePath}`,
+    `- ${p0ProofPath}`,
+    `- ${summaryPath}`,
+    `- ${summaryMdPath}`,
+  ]);
+
+  console.log(`\nA6 closeout artifacts written to: ${outputDir}`);
+  console.log(`Summary: ${summaryPath}`);
+
+  if (!checks.readyToCloseA6Core) {
+    process.exit(2);
+  }
+}
+
+try {
+  main();
+} catch (error) {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exit(1);
+}

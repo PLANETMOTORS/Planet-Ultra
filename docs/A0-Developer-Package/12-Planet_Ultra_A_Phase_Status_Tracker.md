@@ -37,6 +37,7 @@ Rule: A phase is `PASS (100%)` only with code + runtime + dependency evidence.
 1. Run against live `DATABASE_URL` for reconciliation and proof pack:
    - `npm run ops:reconcile -- --require-db`
    - `npm run ops:proof:p0 -- --require-db`
+   - `npm run ops:close:a6`
 2. Attach provider evidence for Dealertrack/RouteOne/Stripe webhook and lifecycle transitions.
 3. Export admin ops snapshots with real rows (`/api/admin/ops`) for audit artifacts.
 4. Update master execution board statuses from `IN_PROGRESS` to `PASS` only after linked evidence is attached.
