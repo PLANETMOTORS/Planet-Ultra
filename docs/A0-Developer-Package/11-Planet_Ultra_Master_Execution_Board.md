@@ -14,7 +14,7 @@ Rule: No item moves to `PASS` without linked runtime evidence.
 | P0-04 | P0 | Finance state machine + audit trail | Backend Lead | state logs for success/fail paths | IN_PROGRESS |
 | P0-05 | P0 | Stripe reconciliation loop | Payments Lead | Stripe-to-DB reconciliation report | IN_PROGRESS |
 | P0-06 | P0 | Webhook idempotency + replay safety | Backend Lead | duplicate/replay/invalid-sign tests | IN_PROGRESS |
-| P0-07 | P0 | Admin panel MVP | Fullstack Lead | inventory/finance/order ops demo + RBAC | OPEN |
+| P0-07 | P0 | Admin panel MVP | Fullstack Lead | inventory/finance/order ops demo + RBAC | IN_PROGRESS |
 | P0-08 | P0 | Observability baseline | SRE Lead | alerts + dashboards + sample incidents | OPEN |
 | P0-09 | P0 | Security controls (WAF/rate/secrets) | Security Lead | abuse test + rotation drill evidence | OPEN |
 | P0-10 | P0 | CRM delivery receipts + retry visibility | Integrations Lead | delivery dashboard + dead-letter handling | OPEN |
@@ -106,6 +106,10 @@ Rule: No item moves to `PASS` without linked runtime evidence.
   - `lib/webhooks/eventStore.ts` now logs duplicate webhook replays (best-effort ledger)
   - `scripts/generate-p0-proof-pack.mjs` for P0-03/P0-04/P0-05/P0-06 evidence snapshots
   - `npm run ops:proof:p0 [output-path]` available for audit exports
+- P0-07 admin MVP baseline added:
+  - `/admin` protected route with allowlist auth (`ADMIN_CLERK_USER_IDS`)
+  - `/api/admin/ops` admin-only operational snapshot endpoint
+  - `lib/ops/adminSnapshot.ts` read-only dashboard data source (finance/webhooks/CRM recent rows)
 
 ## Non-Negotiable Rules
 - One workstream per branch/PR.

@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
  * Routes that require a signed-in Clerk session.
  * All other routes remain public.
  *
- * Protected: /account, /saved, /profile
+ * Protected: /account, /saved, /profile, /admin
  * Public: /, /inventory/*, /finance, /purchase, /protection, /sign-in, /sign-up
  * API: /api/saved-vehicles requires auth (enforced inside the route handler via auth())
  *      All other API routes are server-to-server or public intake (enforced per-handler)
@@ -25,6 +25,7 @@ const isProtectedRoute = createRouteMatcher([
   '/account(.*)',
   '/saved(.*)',
   '/profile(.*)',
+  '/admin(.*)',
 ]);
 
 const SIGN_IN_URL = process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL ?? '/sign-in';
