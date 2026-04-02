@@ -22,6 +22,12 @@ export interface OpsSnapshot {
   inventoryRows: number | null;
   financeSubmissions: number | null;
   financeDeadLetter: number | null;
+  purchaseSubmissions: number | null;
+  purchaseRefunded: number | null;
+  deliverySubmissions: number | null;
+  deliveryFailed: number | null;
+  tradeInSubmissions: number | null;
+  tradeInCompleted: number | null;
   webhookReceived: number | null;
   webhookFailed: number | null;
   crmSent: number | null;
@@ -36,6 +42,12 @@ export async function getOpsSnapshot(): Promise<OpsSnapshot> {
       inventoryRows: null,
       financeSubmissions: null,
       financeDeadLetter: null,
+      purchaseSubmissions: null,
+      purchaseRefunded: null,
+      deliverySubmissions: null,
+      deliveryFailed: null,
+      tradeInSubmissions: null,
+      tradeInCompleted: null,
       webhookReceived: null,
       webhookFailed: null,
       crmSent: null,
@@ -47,6 +59,12 @@ export async function getOpsSnapshot(): Promise<OpsSnapshot> {
     inventoryRows,
     financeSubmissions,
     financeDeadLetter,
+    purchaseSubmissions,
+    purchaseRefunded,
+    deliverySubmissions,
+    deliveryFailed,
+    tradeInSubmissions,
+    tradeInCompleted,
     webhookReceived,
     webhookFailed,
     crmSent,
@@ -57,6 +75,21 @@ export async function getOpsSnapshot(): Promise<OpsSnapshot> {
     scalarCount(
       sql,
       "SELECT COUNT(*)::int AS count FROM finance_submissions WHERE status = 'dead_letter'",
+    ),
+    scalarCount(sql, 'SELECT COUNT(*)::int AS count FROM purchase_submissions'),
+    scalarCount(
+      sql,
+      "SELECT COUNT(*)::int AS count FROM purchase_submissions WHERE status = 'refunded'",
+    ),
+    scalarCount(sql, 'SELECT COUNT(*)::int AS count FROM delivery_submissions'),
+    scalarCount(
+      sql,
+      "SELECT COUNT(*)::int AS count FROM delivery_submissions WHERE status = 'failed'",
+    ),
+    scalarCount(sql, 'SELECT COUNT(*)::int AS count FROM tradein_submissions'),
+    scalarCount(
+      sql,
+      "SELECT COUNT(*)::int AS count FROM tradein_submissions WHERE status = 'completed'",
     ),
     scalarCount(sql, 'SELECT COUNT(*)::int AS count FROM webhook_events'),
     scalarCount(
@@ -78,6 +111,12 @@ export async function getOpsSnapshot(): Promise<OpsSnapshot> {
     inventoryRows,
     financeSubmissions,
     financeDeadLetter,
+    purchaseSubmissions,
+    purchaseRefunded,
+    deliverySubmissions,
+    deliveryFailed,
+    tradeInSubmissions,
+    tradeInCompleted,
     webhookReceived,
     webhookFailed,
     crmSent,
