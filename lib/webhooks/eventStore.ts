@@ -25,7 +25,22 @@ export async function beginWebhookEvent(args: {
     [args.provider, args.eventId, args.eventType, JSON.stringify(args.payload)],
   )) as Array<{ id: string }>;
 
-  return rows.length === 0 ? 'duplicate' : 'recorded';
+  if (rows.length > 0) {
+    return 'recorded';
+  }
+
+  // Best-effort replay ledger. Never fail the webhook due to analytics logging.
+  try {
+    await sql.query(
+      `INSERT INTO webhook_replay_attempts (provider, event_id, event_type, payload)
+       VALUES ($1, $2, $3, $4::jsonb)`,
+      [args.provider, args.eventId, args.eventType, JSON.stringify(args.payload)],
+    );
+  } catch {
+    // no-op
+  }
+
+  return 'duplicate';
 }
 
 export async function completeWebhookEvent(args: {

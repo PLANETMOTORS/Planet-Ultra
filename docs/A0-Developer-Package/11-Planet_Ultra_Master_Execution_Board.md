@@ -101,6 +101,11 @@ Rule: No item moves to `PASS` without linked runtime evidence.
   - `scripts/reconcile-runtime-health.mjs` now validates purchase/delivery/trade-in lifecycle invariants
   - `lib/ops/metrics.ts` now exposes purchase/delivery/trade-in operational counters
   - Added regression tests for ops evidence wiring
+- P0 proof-pack automation baseline added:
+  - `db/migrations/009_webhook_replay_attempts.sql`
+  - `lib/webhooks/eventStore.ts` now logs duplicate webhook replays (best-effort ledger)
+  - `scripts/generate-p0-proof-pack.mjs` for P0-03/P0-04/P0-05/P0-06 evidence snapshots
+  - `npm run ops:proof:p0 [output-path]` available for audit exports
 
 ## Non-Negotiable Rules
 - One workstream per branch/PR.
