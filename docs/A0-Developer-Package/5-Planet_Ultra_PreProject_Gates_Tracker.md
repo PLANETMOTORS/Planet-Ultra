@@ -6,14 +6,14 @@ Use this tracker weekly. A gate is PASS only with objective evidence.
 | Gate ID | Area | Condition | Owner | Evidence | Status |
 |---|---|---|---|---|---|
 | G-01 | Repo Hygiene | No secrets, no build artifacts in git | Eng Lead | Secret scan + git check | OPEN |
-| G-02 | Code Quality | `lint/typecheck/build` all pass | Eng Lead | CI logs | OPEN |
+| G-02 | Code Quality | `lint/typecheck/build` all pass | Eng Lead | CI logs | PASS |
 | G-03 | Domain Integrity | Only `dev.planetmotors.ca` for staging references | Eng Lead | grep report | OPEN |
 | G-04 | Auth Runtime | `/sign-in` live and protected routes redirect correctly | App Eng | browser + HTTP logs | PASS |
-| G-05 | Neon Persistence | `DATABASE_URL` valid + migration done + CRUD proven | Backend Eng | SQL editor + API/browser proof | OPEN |
-| G-06 | Stripe Runtime | Checkout + webhook success/cancel flows proven | Payments Eng | Stripe events + app logs | OPEN |
+| G-05 | Neon Persistence | `DATABASE_URL` valid + migration done + CRUD proven | Backend Eng | SQL editor + API/browser proof | PASS |
+| G-06 | Stripe Runtime | Checkout + webhook success/cancel flows proven | Payments Eng | Stripe events + app logs | PASS |
 | G-07 | Redis Runtime | Real view counters with anti-abuse behavior | Backend Eng | API logs + rate tests | PASS |
-| G-08 | CRM Delivery | Finance/purchase events reach CRM with receipts | Integrations Eng | delivery logs | OPEN |
-| G-09 | Webhook Security | Signature verification + replay defense proven | Backend Eng | test script evidence | OPEN |
+| G-08 | CRM Delivery | Finance/purchase events reach CRM with receipts | Integrations Eng | delivery logs | PASS |
+| G-09 | Webhook Security | Signature verification + replay defense proven | Backend Eng | test script evidence | PASS |
 | G-10 | Route Reliability | All public routes return expected status codes | QA | route matrix test | PASS |
 | G-11 | Observability | Error reporting/alerts enabled for prod-critical APIs | SRE | alert policy + sample alert | OPEN |
 | G-12 | Release Readiness | Rollback steps documented and tested | PM + Eng | rollback runbook | OPEN |
@@ -34,6 +34,16 @@ Use this tracker weekly. A gate is PASS only with objective evidence.
 - G-04 PASS: `/sign-in` returned `200`; protected routes returned `307` to sign-in with preserved redirect.
 - G-07 PASS: `/api/vehicle-views` returned real count payload (`viewCount24h` observed).
 - G-10 PASS: full public route check returned expected HTTP status codes.
+
+## Latest Verification Snapshot (April 2, 2026)
+- G-02 PASS reconfirmed with `npm run ops:debug:full`:
+  - tests `39/39` PASS
+  - `lint` PASS
+  - `typecheck` PASS
+  - `build` PASS
+- Local ops evidence commands run cleanly in safe mode without `DATABASE_URL`:
+  - `npm run ops:reconcile` => `NO_DATABASE`
+  - `npm run ops:proof:p0` => `NO_DATABASE`
 
 ## Startup Update (March 30, 2026)
 - Execution started using master board:

@@ -17,7 +17,7 @@ Rule: No item moves to `PASS` without linked runtime evidence.
 | P0-07 | P0 | Admin panel MVP | Fullstack Lead | inventory/finance/order ops demo + RBAC | IN_PROGRESS |
 | P0-08 | P0 | Observability baseline | SRE Lead | alerts + dashboards + sample incidents | OPEN |
 | P0-09 | P0 | Security controls (WAF/rate/secrets) | Security Lead | abuse test + rotation drill evidence | OPEN |
-| P0-10 | P0 | CRM delivery receipts + retry visibility | Integrations Lead | delivery dashboard + dead-letter handling | OPEN |
+| P0-10 | P0 | CRM delivery receipts + retry visibility | Integrations Lead | delivery dashboard + dead-letter handling | IN_PROGRESS |
 | P0-11 | P0 | Data correctness (totals/tax/order invariants) | Backend Lead | zero critical mismatches report | IN_PROGRESS |
 | P0-12 | P0 | Gate discipline (proof-only closure) | PM + Eng Lead | BlueSheet + Gate Tracker links | IN_PROGRESS |
 | P0-13 | P0 | Trade-in end-to-end | Product Eng Lead | offer/accept/inspect/complete proof | IN_PROGRESS |
@@ -113,6 +113,18 @@ Rule: No item moves to `PASS` without linked runtime evidence.
 - Full A0-to-current debug tooling baseline added:
   - `npm run ops:debug:full` verifies A0 package/docs/routes/migrations + quality/build gates
   - Ops evidence scripts now support safe `NO_DATABASE` mode (unless `--require-db` is set)
+
+## Execution Update (April 2, 2026)
+- Full quality gate rerun completed:
+  - `npm run ops:debug:full` => PASS
+  - tests `39/39` => PASS
+  - `lint/typecheck/build` => PASS
+- P0 proof scripts executed successfully in local safe mode:
+  - `npm run ops:reconcile` => `NO_DATABASE`
+  - `npm run ops:proof:p0` => `NO_DATABASE`
+- Closure posture:
+  - Items with proven runtime evidence remain eligible for `PASS`.
+  - Items requiring live provider/DB evidence remain `IN_PROGRESS` until dependency proof is attached.
 
 ## Non-Negotiable Rules
 - One workstream per branch/PR.
