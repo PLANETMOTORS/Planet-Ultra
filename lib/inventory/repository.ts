@@ -78,44 +78,62 @@ export async function getInventoryCards(limit = 60): Promise<InventoryCardRecord
   const sql = getSql();
   if (!sql) return [];
 
-  const rows = (await sql.query(
-    `SELECT
-      slug, vin, stock, year, make, model, trim, vehicle_type, drivetrain, fuel_type,
-      transmission, mileage_km, exterior_color, interior_color, selling_price_cad,
-      status, imported_at
-     FROM inventory_vehicles
-     WHERE status IS NULL OR status != 'sold'
-     ORDER BY year DESC, imported_at DESC
-     LIMIT $1`,
-    [limit],
-  )) as InventoryVehicleRow[];
+  try {
+    const rows = (await sql.query(
+      `SELECT
+        slug, vin, stock, year, make, model, trim, vehicle_type, drivetrain, fuel_type,
+        transmission, mileage_km, exterior_color, interior_color, selling_price_cad,
+        status, imported_at
+       FROM inventory_vehicles
+       WHERE status IS NULL OR status != 'sold'
+       ORDER BY year DESC, imported_at DESC
+       LIMIT $1`,
+      [limit],
+    )) as InventoryVehicleRow[];
 
-  return rows.map((row) => {
-    const vehicle = rowToVehicle(row);
-    return {
-      vehicle,
-      canonicalPath: buildCanonicalVdpPath(vehicle.make, vehicle.model, vehicle.slug),
-    };
-  });
+    return rows.map((row) => {
+      const vehicle = rowToVehicle(row);
+      return {
+        vehicle,
+        canonicalPath: buildCanonicalVdpPath(vehicle.make, vehicle.model, vehicle.slug),
+      };
+    });
+  } catch (error) {
+    // Handle case where table doesn't exist yet (e.g., during initial build)
+    // PostgreSQL error code 42P01 = undefined_table
+    if (error instanceof Error && 'code' in error && error.code === '42P01') {
+      return [];
+    }
+    throw error;
+  }
 }
 
 export async function getInventoryVehicleBySlug(slug: string): Promise<Vehicle | null> {
   const sql = getSql();
   if (!sql) return null;
 
-  const rows = (await sql.query(
-    `SELECT
-      slug, vin, stock, year, make, model, trim, vehicle_type, drivetrain, fuel_type,
-      transmission, mileage_km, exterior_color, interior_color, selling_price_cad,
-      status, imported_at
-     FROM inventory_vehicles
-     WHERE slug = $1
-     LIMIT 1`,
-    [slug],
-  )) as InventoryVehicleRow[];
+  try {
+    const rows = (await sql.query(
+      `SELECT
+        slug, vin, stock, year, make, model, trim, vehicle_type, drivetrain, fuel_type,
+        transmission, mileage_km, exterior_color, interior_color, selling_price_cad,
+        status, imported_at
+       FROM inventory_vehicles
+       WHERE slug = $1
+       LIMIT 1`,
+      [slug],
+    )) as InventoryVehicleRow[];
 
-  if (rows.length === 0) return null;
-  return rowToVehicle(rows[0]);
+    if (rows.length === 0) return null;
+    return rowToVehicle(rows[0]);
+  } catch (error) {
+    // Handle case where table doesn't exist yet (e.g., during initial build)
+    // PostgreSQL error code 42P01 = undefined_table
+    if (error instanceof Error && 'code' in error && error.code === '42P01') {
+      return null;
+    }
+    throw error;
+  }
 }
 
 /**
@@ -129,19 +147,28 @@ export async function getInventoryVehicleByReference(
   const sql = getSql();
   if (!sql) return null;
 
-  const rows = (await sql.query(
-    `SELECT
-      slug, vin, stock, year, make, model, trim, vehicle_type, drivetrain, fuel_type,
-      transmission, mileage_km, exterior_color, interior_color, selling_price_cad,
-      status, imported_at
-     FROM inventory_vehicles
-     WHERE vin = $1 AND slug = $2
-     LIMIT 1`,
-    [vehicleId, vehicleSlug],
-  )) as InventoryVehicleRow[];
+  try {
+    const rows = (await sql.query(
+      `SELECT
+        slug, vin, stock, year, make, model, trim, vehicle_type, drivetrain, fuel_type,
+        transmission, mileage_km, exterior_color, interior_color, selling_price_cad,
+        status, imported_at
+       FROM inventory_vehicles
+       WHERE vin = $1 AND slug = $2
+       LIMIT 1`,
+      [vehicleId, vehicleSlug],
+    )) as InventoryVehicleRow[];
 
-  if (rows.length === 0) return null;
-  return rowToVehicle(rows[0]);
+    if (rows.length === 0) return null;
+    return rowToVehicle(rows[0]);
+  } catch (error) {
+    // Handle case where table doesn't exist yet (e.g., during initial build)
+    // PostgreSQL error code 42P01 = undefined_table
+    if (error instanceof Error && 'code' in error && error.code === '42P01') {
+      return null;
+    }
+    throw error;
+  }
 }
 
 export async function resolveInventoryCanonicalPathBySlug(slug: string): Promise<string | null> {
