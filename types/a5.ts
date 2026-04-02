@@ -67,6 +67,16 @@ export type DeliveryLifecycleStatus =
   | 'failed'
   | 'cancelled';
 
+export type TradeInLifecycleStatus =
+  | 'offered'
+  | 'accepted'
+  | 'scheduled'
+  | 'inspected'
+  | 'completed'
+  | 'declined'
+  | 'expired'
+  | 'withdrawn';
+
 // ─── Finance Submission ──────────────────────────────────────────────────────
 
 /**
@@ -180,6 +190,7 @@ export type WebhookNamespace =
   | 'dealertrack'
   | 'routeone'
   | 'delivery'
+  | 'tradein'
   | 'sanity';
 
 export type WebhookStatus = 'active' | 'stub';

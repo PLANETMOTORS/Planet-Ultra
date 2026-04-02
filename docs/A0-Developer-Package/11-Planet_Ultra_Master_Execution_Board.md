@@ -20,7 +20,7 @@ Rule: No item moves to `PASS` without linked runtime evidence.
 | P0-10 | P0 | CRM delivery receipts + retry visibility | Integrations Lead | delivery dashboard + dead-letter handling | OPEN |
 | P0-11 | P0 | Data correctness (totals/tax/order invariants) | Backend Lead | zero critical mismatches report | IN_PROGRESS |
 | P0-12 | P0 | Gate discipline (proof-only closure) | PM + Eng Lead | BlueSheet + Gate Tracker links | IN_PROGRESS |
-| P0-13 | P0 | Trade-in end-to-end | Product Eng Lead | offer/accept/inspect/complete proof | OPEN |
+| P0-13 | P0 | Trade-in end-to-end | Product Eng Lead | offer/accept/inspect/complete proof | IN_PROGRESS |
 | P0-14 | P0 | Delivery lifecycle end-to-end | Ops + Backend | slot/tracking/status proofs | IN_PROGRESS |
 | P0-15 | P0 | 10-day return/refund workflow | Payments + Ops | return + refund settlement evidence | IN_PROGRESS |
 | P1-16 | P1 | Saved searches + alerts | Frontend + Backend | create/update/notify proof | OPEN |
@@ -91,6 +91,12 @@ Rule: No item moves to `PASS` without linked runtime evidence.
   - `lib/delivery/lifecycleStore.ts`
   - `/api/purchase/delivery` added for customer scheduling + status retrieval
   - `/api/webhooks/delivery` added for provider status updates (`scheduled/confirmed/in_transit/delivered/failed/cancelled`)
+- P0-13 lifecycle baseline added:
+  - `db/migrations/008_tradein_lifecycle.sql`
+  - `lib/tradein/lifecycleStore.ts`
+  - `/api/trade-in/offer`, `/api/trade-in/accept`, `/api/trade-in/status` added
+  - `/api/webhooks/tradein` added for inspected/completed terminal provider updates
+  - `/sell-or-trade` route created (was previously linked but missing)
 
 ## Non-Negotiable Rules
 - One workstream per branch/PR.
