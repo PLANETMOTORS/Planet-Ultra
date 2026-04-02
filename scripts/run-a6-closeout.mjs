@@ -19,6 +19,60 @@ function loadLocalEnvFiles() {
   }
 }
 
+function hasMeaningfulValue(value) {
+  return Boolean(value && value.trim() && value !== '...' && !value.includes('...'));
+}
+
+function isValidDatabaseUrl(url) {
+  if (!hasMeaningfulValue(url)) return false;
+  if (
+    url.includes('[user]') ||
+    url.includes('[password]') ||
+    url.includes('[host]') ||
+    url.includes('[dbname]')
+  ) {
+    return false;
+  }
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function validateRequiredEnvironment() {
+  const required = [
+    'DATABASE_URL',
+    'CLERK_WEBHOOK_SECRET',
+    'STRIPE_WEBHOOK_SECRET',
+    'STRIPE_SECRET_KEY',
+    'OPS_API_SECRET',
+    'DEALERTRACK_WEBHOOK_SECRET',
+    'ROUTEONE_WEBHOOK_SECRET',
+    'DELIVERY_WEBHOOK_SECRET',
+    'TRADEIN_WEBHOOK_SECRET',
+    'AUTORAPTOR_WEBHOOK_SECRET',
+  ];
+
+  const issues = [];
+  for (const key of required) {
+    const value = process.env[key] ?? '';
+    if (!hasMeaningfulValue(value)) {
+      issues.push(`${key} is missing or placeholder`);
+    }
+  }
+
+  if (!isValidDatabaseUrl(process.env.DATABASE_URL ?? '')) {
+    issues.push('DATABASE_URL is not a valid non-placeholder URL');
+  }
+
+  return {
+    ok: issues.length === 0,
+    issues,
+  };
+}
+
 function timestampCompact() {
   return new Date().toISOString().replace(/[:.]/g, '-');
 }
@@ -92,8 +146,12 @@ function evaluate(
 function main() {
   loadLocalEnvFiles();
 
-  if (!process.env.DATABASE_URL) {
-    console.error('Missing DATABASE_URL. A6 closeout requires live DB evidence.');
+  const envCheck = validateRequiredEnvironment();
+  if (!envCheck.ok) {
+    console.error('A6 closeout env precheck failed. Fix these first:');
+    for (const issue of envCheck.issues) {
+      console.error(`- ${issue}`);
+    }
     process.exit(1);
   }
 
