@@ -1,12 +1,11 @@
-import { neon, type NeonQueryFunction } from '@neondatabase/serverless';
+import type { NeonQueryFunction } from '@neondatabase/serverless';
 import { getOpsSnapshot, type OpsSnapshot } from '@/lib/ops/metrics';
+import { getDatabaseSql } from '@/lib/db/sql';
 
 type Sql = NeonQueryFunction<false, false>;
 
 function getSql(): Sql | null {
-  const url = process.env.DATABASE_URL;
-  if (!url) return null;
-  return neon(url);
+  return getDatabaseSql();
 }
 
 async function maybeRows(sql: Sql, query: string) {

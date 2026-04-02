@@ -3,6 +3,22 @@ import path from 'node:path';
 import process from 'node:process';
 import { spawnSync } from 'node:child_process';
 
+function loadLocalEnvFiles() {
+  const candidates = ['.env.local', '.env'];
+  for (const file of candidates) {
+    const resolved = path.resolve(process.cwd(), file);
+    if (!fs.existsSync(resolved)) {
+      continue;
+    }
+    try {
+      process.loadEnvFile(resolved);
+      console.log(`[env] loaded ${file}`);
+    } catch (error) {
+      console.warn(`[env] failed to load ${file}: ${error.message}`);
+    }
+  }
+}
+
 function timestampCompact() {
   return new Date().toISOString().replace(/[:.]/g, '-');
 }
@@ -74,6 +90,8 @@ function evaluate(
 }
 
 function main() {
+  loadLocalEnvFiles();
+
   if (!process.env.DATABASE_URL) {
     console.error('Missing DATABASE_URL. A6 closeout requires live DB evidence.');
     process.exit(1);

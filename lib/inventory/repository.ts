@@ -1,6 +1,7 @@
-import { neon, type NeonQueryFunction } from '@neondatabase/serverless';
+import type { NeonQueryFunction } from '@neondatabase/serverless';
 import type { Vehicle, VehicleStatus } from '@/types/vehicle';
 import { buildCanonicalVdpPath } from '@/lib/seo/urlUtils';
+import { getDatabaseSql } from '@/lib/db/sql';
 
 type Sql = NeonQueryFunction<false, false>;
 
@@ -28,9 +29,7 @@ const FALLBACK_HERO_IMAGE_URL =
   'https://res.cloudinary.com/planet-motors/image/upload/v1700000000/vehicles/bmw-x3-fixture-hero.jpg';
 
 function getSql(): Sql | null {
-  const url = process.env.DATABASE_URL;
-  if (!url) return null;
-  return neon(url);
+  return getDatabaseSql();
 }
 
 function toVehicleStatus(value: string | null): VehicleStatus {

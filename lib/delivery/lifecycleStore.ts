@@ -1,5 +1,6 @@
-import { neon, type NeonQueryFunction } from '@neondatabase/serverless';
+import type { NeonQueryFunction } from '@neondatabase/serverless';
 import type { DeliveryLifecycleStatus } from '@/types/a5';
+import { getDatabaseSql } from '@/lib/db/sql';
 
 type Sql = NeonQueryFunction<false, false>;
 
@@ -10,9 +11,7 @@ type SubmissionRow = {
 };
 
 function getSql(): Sql | null {
-  const url = process.env.DATABASE_URL;
-  if (!url) return null;
-  return neon(url);
+  return getDatabaseSql();
 }
 
 async function recordEvent(
@@ -197,4 +196,3 @@ export async function getDeliveryScheduleForUser(args: {
 
   return rows[0] ?? null;
 }
-
