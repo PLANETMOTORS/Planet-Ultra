@@ -97,6 +97,10 @@ Rule: No item moves to `PASS` without linked runtime evidence.
   - `/api/trade-in/offer`, `/api/trade-in/accept`, `/api/trade-in/status` added
   - `/api/webhooks/tradein` added for inspected/completed terminal provider updates
   - `/sell-or-trade` route created (was previously linked but missing)
+- P0-05/P0-06 evidence hardening baseline added:
+  - `scripts/reconcile-runtime-health.mjs` now validates purchase/delivery/trade-in lifecycle invariants
+  - `lib/ops/metrics.ts` now exposes purchase/delivery/trade-in operational counters
+  - Added regression tests for ops evidence wiring
 
 ## Non-Negotiable Rules
 - One workstream per branch/PR.
