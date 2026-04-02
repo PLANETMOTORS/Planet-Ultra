@@ -33,7 +33,7 @@ function writeMarkdown(filePath, lines) {
   fs.writeFileSync(filePath, `${lines.join('\n')}\n`, 'utf8');
 }
 
-function evaluate(reconcile, p0Proof) {
+function evaluate(reconcile, p0Proof, opsAlerts, securityBaseline) {
   const p0Verdict = p0Proof?.verdict ?? {};
   const requiredP0 = ['p0_03', 'p0_04', 'p0_05', 'p0_06'];
   const p0Checks = Object.fromEntries(
@@ -43,12 +43,16 @@ function evaluate(reconcile, p0Proof) {
 
   const reconcilePass =
     reconcile?.verdict === 'PASS' && Number(reconcile?.criticalMismatchCount ?? 1) === 0;
+  const opsAlertsPass = opsAlerts?.verdict === 'PASS';
+  const securityPass = securityBaseline?.verdict === 'PASS';
 
   return {
     reconcilePass,
     p0AllPass,
+    opsAlertsPass,
+    securityPass,
     p0Checks,
-    readyToCloseA6Core: reconcilePass && p0AllPass,
+    readyToCloseA6Core: reconcilePass && p0AllPass && opsAlertsPass && securityPass,
   };
 }
 
@@ -66,6 +70,8 @@ function main() {
 
   const reconcilePath = path.join(outputDir, 'reconcile.json');
   const p0ProofPath = path.join(outputDir, 'p0-proof-pack.json');
+  const opsAlertsPath = path.join(outputDir, 'ops-alerts.json');
+  const securityPath = path.join(outputDir, 'security-baseline.json');
   const summaryPath = path.join(outputDir, 'a6-closeout-summary.json');
   const summaryMdPath = path.join(outputDir, 'A6_CLOSEOUT_SUMMARY.md');
 
@@ -85,10 +91,23 @@ function main() {
     p0ProofPath,
     '--require-db',
   ]);
+  run('ops alerts (strict, require-db)', process.execPath, [
+    'scripts/check-ops-alerts.mjs',
+    opsAlertsPath,
+    '--require-db',
+    '--strict',
+  ]);
+  run('security baseline (require-secrets)', process.execPath, [
+    'scripts/security-baseline-check.mjs',
+    securityPath,
+    '--require-secrets',
+  ]);
 
   const reconcile = readJson(reconcilePath);
   const p0Proof = readJson(p0ProofPath);
-  const checks = evaluate(reconcile, p0Proof);
+  const opsAlerts = readJson(opsAlertsPath);
+  const securityBaseline = readJson(securityPath);
+  const checks = evaluate(reconcile, p0Proof, opsAlerts, securityBaseline);
 
   const summary = {
     generatedAt: new Date().toISOString(),
@@ -96,6 +115,8 @@ function main() {
     checks,
     reconcile,
     p0ProofVerdict: p0Proof.verdict,
+    opsAlertsVerdict: opsAlerts.verdict,
+    securityVerdict: securityBaseline.verdict,
     notes: [
       'readyToCloseA6Core=true means DB-backed technical evidence is complete for core A6 closure criteria.',
       'Manual provider/browser evidence may still be required by governance docs before formal PASS sign-off.',
@@ -113,6 +134,8 @@ function main() {
     '',
     `- Reconciliation PASS: ${checks.reconcilePass ? 'YES' : 'NO'}`,
     `- P0 proof-pack PASS (03/04/05/06): ${checks.p0AllPass ? 'YES' : 'NO'}`,
+    `- Ops alerts PASS: ${checks.opsAlertsPass ? 'YES' : 'NO'}`,
+    `- Security baseline PASS: ${checks.securityPass ? 'YES' : 'NO'}`,
     `- Ready to close A6 core: ${checks.readyToCloseA6Core ? 'YES' : 'NO'}`,
     '',
     '## P0 Detail',
@@ -122,10 +145,17 @@ function main() {
     `- p0_05 (Stripe reconciliation): ${checks.p0Checks.p0_05 ? 'PASS_CANDIDATE' : 'IN_PROGRESS'}`,
     `- p0_06 (Webhook replay safety): ${checks.p0Checks.p0_06 ? 'PASS_CANDIDATE' : 'IN_PROGRESS'}`,
     '',
+    '## Controls Detail',
+    '',
+    `- Ops alerts verdict: ${opsAlerts.verdict}`,
+    `- Security baseline verdict: ${securityBaseline.verdict}`,
+    '',
     '## Artifacts',
     '',
     `- ${reconcilePath}`,
     `- ${p0ProofPath}`,
+    `- ${opsAlertsPath}`,
+    `- ${securityPath}`,
     `- ${summaryPath}`,
     `- ${summaryMdPath}`,
   ]);

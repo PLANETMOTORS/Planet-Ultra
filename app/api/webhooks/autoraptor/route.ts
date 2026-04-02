@@ -14,7 +14,14 @@ export async function POST(req: NextRequest) {
   const expectedSecret = process.env.AUTORAPTOR_WEBHOOK_SECRET;
   const receivedSecret = req.headers.get('x-autoraptor-secret');
 
-  if (expectedSecret && receivedSecret !== expectedSecret) {
+  if (!expectedSecret) {
+    return NextResponse.json(
+      { error: 'Webhook not configured' },
+      { status: 500 },
+    );
+  }
+
+  if (receivedSecret !== expectedSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

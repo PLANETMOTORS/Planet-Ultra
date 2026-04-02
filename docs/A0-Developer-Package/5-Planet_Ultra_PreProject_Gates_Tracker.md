@@ -15,7 +15,7 @@ Use this tracker weekly. A gate is PASS only with objective evidence.
 | G-08 | CRM Delivery | Finance/purchase events reach CRM with receipts | Integrations Eng | delivery logs | PASS |
 | G-09 | Webhook Security | Signature verification + replay defense proven | Backend Eng | test script evidence | PASS |
 | G-10 | Route Reliability | All public routes return expected status codes | QA | route matrix test | PASS |
-| G-11 | Observability | Error reporting/alerts enabled for prod-critical APIs | SRE | alert policy + sample alert | OPEN |
+| G-11 | Observability | Error reporting/alerts enabled for prod-critical APIs | SRE | alert policy + sample alert | IN_PROGRESS |
 | G-12 | Release Readiness | Rollback steps documented and tested | PM + Eng | rollback runbook | OPEN |
 | G-13 | Inventory Replace Rule | HomeNet imports must replace current inventory (no historical carry-over) | Backend Eng | importer code + SQL evidence + row-count proof | IN_PROGRESS |
 
@@ -37,13 +37,17 @@ Use this tracker weekly. A gate is PASS only with objective evidence.
 
 ## Latest Verification Snapshot (April 2, 2026)
 - G-02 PASS reconfirmed with `npm run ops:debug:full`:
-  - tests `39/39` PASS
+  - tests `47/47` PASS
   - `lint` PASS
   - `typecheck` PASS
   - `build` PASS
 - Local ops evidence commands run cleanly in safe mode without `DATABASE_URL`:
   - `npm run ops:reconcile` => `NO_DATABASE`
   - `npm run ops:proof:p0` => `NO_DATABASE`
+- Observability/security evidence tooling added:
+  - `npm run ops:alerts`
+  - `npm run ops:security:check`
+  - `npm run ops:close:a6` now enforces reconcile + P0 proof + alerts + security checks for closeout.
 
 ## Startup Update (March 30, 2026)
 - Execution started using master board:

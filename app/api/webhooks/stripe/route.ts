@@ -22,10 +22,16 @@ interface StripeEvent {
 
 export async function POST(req: NextRequest) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
   const stripeSignature = req.headers.get('stripe-signature');
 
   if (!secret) {
     console.error('[webhook/stripe] STRIPE_WEBHOOK_SECRET is not configured');
+    return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 });
+  }
+
+  if (!stripeSecretKey) {
+    console.error('[webhook/stripe] STRIPE_SECRET_KEY is not configured');
     return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 });
   }
 
@@ -38,7 +44,7 @@ export async function POST(req: NextRequest) {
   let event: StripeEvent;
   try {
     const Stripe = (await import('stripe')).default;
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2026-02-25.clover',
     });
     event = stripe.webhooks.constructEvent(

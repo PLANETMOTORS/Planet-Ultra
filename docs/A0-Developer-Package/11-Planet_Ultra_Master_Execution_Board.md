@@ -15,8 +15,8 @@ Rule: No item moves to `PASS` without linked runtime evidence.
 | P0-05 | P0 | Stripe reconciliation loop | Payments Lead | Stripe-to-DB reconciliation report | IN_PROGRESS |
 | P0-06 | P0 | Webhook idempotency + replay safety | Backend Lead | duplicate/replay/invalid-sign tests | IN_PROGRESS |
 | P0-07 | P0 | Admin panel MVP | Fullstack Lead | inventory/finance/order ops demo + RBAC | IN_PROGRESS |
-| P0-08 | P0 | Observability baseline | SRE Lead | alerts + dashboards + sample incidents | OPEN |
-| P0-09 | P0 | Security controls (WAF/rate/secrets) | Security Lead | abuse test + rotation drill evidence | OPEN |
+| P0-08 | P0 | Observability baseline | SRE Lead | alerts + dashboards + sample incidents | IN_PROGRESS |
+| P0-09 | P0 | Security controls (WAF/rate/secrets) | Security Lead | abuse test + rotation drill evidence | IN_PROGRESS |
 | P0-10 | P0 | CRM delivery receipts + retry visibility | Integrations Lead | delivery dashboard + dead-letter handling | IN_PROGRESS |
 | P0-11 | P0 | Data correctness (totals/tax/order invariants) | Backend Lead | zero critical mismatches report | IN_PROGRESS |
 | P0-12 | P0 | Gate discipline (proof-only closure) | PM + Eng Lead | BlueSheet + Gate Tracker links | IN_PROGRESS |
@@ -117,7 +117,7 @@ Rule: No item moves to `PASS` without linked runtime evidence.
 ## Execution Update (April 2, 2026)
 - Full quality gate rerun completed:
   - `npm run ops:debug:full` => PASS
-  - tests `39/39` => PASS
+  - tests `47/47` => PASS
   - `lint/typecheck/build` => PASS
 - P0 proof scripts executed successfully in local safe mode:
   - `npm run ops:reconcile` => `NO_DATABASE`
@@ -125,6 +125,10 @@ Rule: No item moves to `PASS` without linked runtime evidence.
 - Closure posture:
   - Items with proven runtime evidence remain eligible for `PASS`.
   - Items requiring live provider/DB evidence remain `IN_PROGRESS` until dependency proof is attached.
+- Observability + security closeout tooling added:
+  - `scripts/check-ops-alerts.mjs` (`npm run ops:alerts`) for threshold-based alert snapshots.
+  - `scripts/security-baseline-check.mjs` (`npm run ops:security:check`) for secret/config posture checks.
+  - `scripts/run-a6-closeout.mjs` now includes alerts + security gates in the A6 closeout verdict.
 
 ## Non-Negotiable Rules
 - One workstream per branch/PR.
