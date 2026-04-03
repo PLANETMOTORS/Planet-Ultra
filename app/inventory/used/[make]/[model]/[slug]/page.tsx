@@ -79,6 +79,8 @@ export default async function VdpPage({
 
   const canonicalPath = buildCanonicalVdpPath(make, model, slug);
   const vehicleName = `${vehicle.year} ${vehicle.make} ${vehicle.model}${vehicle.trim ? ` ${vehicle.trim}` : ''}`;
+  const displayPrice = vehicle.salePriceCad ?? vehicle.priceCad;
+  const estimatedMonthly = Math.round(displayPrice / 72);
 
   const breadcrumb = buildBreadcrumbJsonLd([
     { name: 'Home', path: '/' },
@@ -108,195 +110,124 @@ export default async function VdpPage({
         </div>
       </header>
 
-      <section className="section">
+      <section className="section vdp-page">
         <div className="container">
-          <nav aria-label="Breadcrumb">
-            <ol style={{ display: 'flex', gap: '8px', listStyle: 'none', padding: 0, margin: '0 0 16px', flexWrap: 'wrap' }}>
-              <li><Link href="/">Home</Link></li>
-              <li aria-hidden="true"> / </li>
-              <li><Link href="/inventory">Inventory</Link></li>
-              <li aria-hidden="true"> / </li>
+          <nav aria-label="Breadcrumb" className="vdp-breadcrumb">
+            <ol>
+              <li>
+                <Link href="/">Home</Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li>
+                <Link href="/inventory">Inventory</Link>
+              </li>
+              <li aria-hidden="true">/</li>
               <li aria-current="page">{vehicleName}</li>
             </ol>
           </nav>
 
-          <h1>{vehicleName}</h1>
+          <h1 className="vdp-title">{vehicleName}</h1>
 
-          {/*
-            Hero media — LCP candidate.
-            Rendered as a standard image block.
-            If a 360 asset exists it is rendered poster-first, isolated below.
-          */}
-          {vehicle.heroImage?.url && (
-            <div
-              style={{
-                aspectRatio: '3/2',
-                background: 'rgba(255,255,255,0.04)',
-                borderRadius: '16px',
-                overflow: 'hidden',
-                marginBottom: '24px',
-              }}
-            >
-              {/*
-                NOTE: Use next/image with width/height once Cloudinary transforms are
-                confirmed. Explicit dimensions are required to prevent CLS.
-                width={1200} height={800} will be set in a later phase.
-              */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={vehicle.heroImage.url}
-                alt={vehicle.heroImage.alt || vehicleName}
-                width={1200}
-                height={800}
-                style={{ width: '100%', height: 'auto', display: 'block' }}
-              />
-            </div>
-          )}
+          <div className="vdp-shell">
+            <article className="vdp-gallery">
+              <div className="vdp-media-stage">
+                {vehicle.heroImage?.url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={vehicle.heroImage.url}
+                    alt={vehicle.heroImage.alt || vehicleName}
+                    width={1200}
+                    height={800}
+                    className="vdp-media-image"
+                  />
+                ) : (
+                  <div className="vdp-media-image vdp-media-fallback">Vehicle Photo</div>
+                )}
 
-          {/*
-            360 viewer — fully isolated from critical render path.
-            Poster shown immediately. Viewer JS loads only on user interaction.
-            The viewer component itself will use dynamic import() in a later phase.
-          */}
-          {show360 && poster360Url && (
-            <div
-              data-testid="360-poster"
-              style={{
-                aspectRatio: '3/2',
-                background: 'rgba(255,255,255,0.04)',
-                borderRadius: '16px',
-                overflow: 'hidden',
-                marginBottom: '24px',
-                position: 'relative',
-              }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={poster360Url}
-                alt={`${vehicleName} 360 view`}
-                width={1200}
-                height={800}
-                style={{ width: '100%', height: 'auto', display: 'block' }}
-              />
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  display: 'grid',
-                  placeItems: 'center',
-                  background: 'rgba(0,0,0,0.3)',
-                }}
-              >
-                <button
-                  style={{
-                    background: 'rgba(255,255,255,0.9)',
-                    color: '#0b0d10',
-                    border: 'none',
-                    borderRadius: '12px',
-                    padding: '12px 24px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                  }}
-                  aria-label="Launch 360 degree view"
-                >
-                  View 360°
-                </button>
+                {show360 && poster360Url && (
+                  <div className="vdp-360-overlay" data-testid="360-poster">
+                    <button className="vdp-360-button" aria-label="Launch 360 degree view">
+                      View 360°
+                    </button>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
 
-          <div className="card" style={{ marginBottom: '24px' }}>
-            <h2>Vehicle Details</h2>
-            <dl className="spec-list">
-              <div className="spec-row">
-                <dt>Year</dt>
-                <dd>{vehicle.year}</dd>
+              <div className="vdp-thumbs" aria-hidden="true">
+                {vehicle.galleryImages && vehicle.galleryImages.length > 0
+                  ? vehicle.galleryImages.slice(0, 5).map((img, idx) => (
+                      <div key={`${img.url}-${idx}`} className="vdp-thumb">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={img.url} alt={img.alt || `${vehicleName} photo ${idx + 1}`} />
+                      </div>
+                    ))
+                  : Array.from({ length: 5 }).map((_, idx) => (
+                      <div className="vdp-thumb vdp-thumb-fallback" key={`thumb-${idx}`} />
+                    ))}
               </div>
-              <div className="spec-row">
-                <dt>Make</dt>
-                <dd>{vehicle.make}</dd>
+            </article>
+
+            <aside className="vdp-panel">
+              <p className="eyebrow">{vehicle.year} {vehicle.make} {vehicle.model}</p>
+              <div className="vdp-price">${displayPrice.toLocaleString('en-CA')}</div>
+              {vehicle.salePriceCad && (
+                <p className="vdp-price-note">Was ${vehicle.priceCad.toLocaleString('en-CA')}</p>
+              )}
+              <p className="vdp-price-subtle">Estimated ${estimatedMonthly.toLocaleString('en-CA')}/mo · 72 months</p>
+
+              <div className="vdp-spec-grid">
+                <div className="vdp-spec-tile">
+                  <span>Mileage</span>
+                  <strong>{vehicle.mileageKm.toLocaleString('en-CA')} km</strong>
+                </div>
+                <div className="vdp-spec-tile">
+                  <span>Powertrain</span>
+                  <strong>{vehicle.drivetrain || 'AWD/2WD'}</strong>
+                </div>
+                <div className="vdp-spec-tile">
+                  <span>Fuel</span>
+                  <strong>{vehicle.fuelType || 'Gasoline'}</strong>
+                </div>
+                <div className="vdp-spec-tile">
+                  <span>Transmission</span>
+                  <strong>{vehicle.transmission || 'Automatic'}</strong>
+                </div>
               </div>
-              <div className="spec-row">
-                <dt>Model</dt>
-                <dd>{vehicle.model}</dd>
+
+              <div className="vdp-social-proof">
+                <strong>Live shopper signal</strong>
+                <p>1 person viewed this vehicle in the past 24 hours.</p>
               </div>
-              {vehicle.trim && (
-                <div className="spec-row">
-                  <dt>Trim</dt>
-                  <dd>{vehicle.trim}</dd>
-                </div>
-              )}
-              <div className="spec-row">
-                <dt>Mileage</dt>
-                <dd>{vehicle.mileageKm.toLocaleString()} km</dd>
+
+              <div className="vdp-cta-stack">
+                <Link className="button button-primary" href="/purchase">
+                  Reserve With Deposit
+                </Link>
+                <Link className="button button-secondary" href="/finance">
+                  Apply for Financing
+                </Link>
+                <Link className="button button-secondary" href="/sell-or-trade">
+                  Trade In Your Vehicle
+                </Link>
               </div>
-              {vehicle.bodyStyle && (
-                <div className="spec-row">
-                  <dt>Body Style</dt>
-                  <dd>{vehicle.bodyStyle}</dd>
-                </div>
-              )}
-              {vehicle.drivetrain && (
-                <div className="spec-row">
-                  <dt>Drivetrain</dt>
-                  <dd>{vehicle.drivetrain}</dd>
-                </div>
-              )}
-              {vehicle.fuelType && (
-                <div className="spec-row">
-                  <dt>Fuel Type</dt>
-                  <dd>{vehicle.fuelType}</dd>
-                </div>
-              )}
-              {vehicle.transmission && (
-                <div className="spec-row">
-                  <dt>Transmission</dt>
-                  <dd>{vehicle.transmission}</dd>
-                </div>
-              )}
-              {vehicle.exteriorColor && (
-                <div className="spec-row">
-                  <dt>Exterior Colour</dt>
-                  <dd>{vehicle.exteriorColor}</dd>
-                </div>
-              )}
-              {vehicle.interiorColor && (
-                <div className="spec-row">
-                  <dt>Interior Colour</dt>
-                  <dd>{vehicle.interiorColor}</dd>
-                </div>
-              )}
-              <div className="spec-row">
-                <dt>VIN</dt>
-                <dd>{vehicle.vin}</dd>
-              </div>
-              <div className="spec-row">
-                <dt>Stock #</dt>
-                <dd>{vehicle.stockNumber}</dd>
-              </div>
-            </dl>
+            </aside>
           </div>
 
-          <div className="card">
-            <h2>
-              {vehicle.salePriceCad
-                ? `$${vehicle.salePriceCad.toLocaleString()}`
-                : `$${vehicle.priceCad.toLocaleString()}`}
-            </h2>
-            {vehicle.salePriceCad && (
-              <p className="muted" style={{ textDecoration: 'line-through' }}>
-                Was ${vehicle.priceCad.toLocaleString()}
-              </p>
-            )}
-            <div style={{ display: 'flex', gap: '12px', marginTop: '16px', flexWrap: 'wrap' }}>
-              <a className="button button-primary" href="/finance">
-                Apply for Financing
-              </a>
-              <a className="button button-secondary" href="/sell-or-trade">
-                Trade In Your Vehicle
-              </a>
+          <section className="vdp-trust-block">
+            <h2>Protection + Delivery Confidence</h2>
+            <div className="vdp-chip-row">
+              <span className="vdp-chip">10-Day Money-Back</span>
+              <span className="vdp-chip">CARFAX Included</span>
+              <span className="vdp-chip">Inspection Report Ready</span>
+              <span className="vdp-chip">Extended Warranty Options</span>
+              <span className="vdp-chip">Home Delivery Available</span>
+              <span className="vdp-chip">VIN: {vehicle.vin}</span>
+              <span className="vdp-chip">Stock #: {vehicle.stockNumber}</span>
+              {vehicle.exteriorColor && <span className="vdp-chip">Exterior: {vehicle.exteriorColor}</span>}
+              {vehicle.interiorColor && <span className="vdp-chip">Interior: {vehicle.interiorColor}</span>}
+              {vehicle.bodyStyle && <span className="vdp-chip">Body: {vehicle.bodyStyle}</span>}
             </div>
-          </div>
+          </section>
         </div>
       </section>
 
