@@ -14,6 +14,7 @@ const PACKAGE_JSON = path.join(repoRoot, 'package.json');
 test('a6 closeout script requires database-backed evidence and emits artifacts', () => {
   const source = fs.readFileSync(CLOSEOUT_SCRIPT, 'utf8');
   assert.match(source, /DATABASE_URL/);
+  assert.match(source, /--env-only/);
   assert.match(source, /reconcile-runtime-health\.mjs/);
   assert.match(source, /generate-p0-proof-pack\.mjs/);
   assert.match(source, /generate-inventory-ingest-evidence\.mjs/);
@@ -26,4 +27,5 @@ test('a6 closeout script requires database-backed evidence and emits artifacts',
 test('package scripts expose a6 closeout command', () => {
   const pkg = JSON.parse(fs.readFileSync(PACKAGE_JSON, 'utf8'));
   assert.equal(pkg.scripts['ops:close:a6'], 'node scripts/run-a6-closeout.mjs');
+  assert.equal(pkg.scripts['ops:env:a6'], 'node scripts/run-a6-closeout.mjs --env-only');
 });

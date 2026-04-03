@@ -21,7 +21,8 @@
     "ops:alerts": "node scripts/check-ops-alerts.mjs",
     "ops:security:check": "node scripts/security-baseline-check.mjs",
     "ops:debug:full": "node scripts/run-full-debug-check.mjs",
-    "ops:close:a6": "node scripts/run-a6-closeout.mjs"
+    "ops:close:a6": "node scripts/run-a6-closeout.mjs",
+    "ops:env:a6": "node scripts/run-a6-closeout.mjs --env-only"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.0.6",

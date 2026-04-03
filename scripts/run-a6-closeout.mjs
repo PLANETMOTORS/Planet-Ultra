@@ -145,6 +145,7 @@ function evaluate(
 
 function main() {
   loadLocalEnvFiles();
+  const envOnly = process.argv.includes('--env-only');
 
   const envCheck = validateRequiredEnvironment();
   if (!envCheck.ok) {
@@ -153,6 +154,11 @@ function main() {
       console.error(`- ${issue}`);
     }
     process.exit(1);
+  }
+
+  if (envOnly) {
+    console.log('A6 closeout env precheck passed.');
+    return;
   }
 
   const outDirArg = process.argv[2];
