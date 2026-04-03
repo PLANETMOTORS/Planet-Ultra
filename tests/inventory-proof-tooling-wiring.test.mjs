@@ -22,6 +22,9 @@ test('inventory import script persists run ledger and dead letters with retries'
   assert.match(source, /inventory_import_dead_letters/);
   assert.match(source, /runWithRetry/);
   assert.match(source, /TRUNCATE TABLE inventory_vehicles/);
+  assert.match(source, /HOMENET_CSV_PATH/);
+  assert.match(source, /data\/homenet\/latest\.csv/);
+  assert.doesNotMatch(source, /InventoryReport-3-30-2026/);
 });
 
 test('inventory proof script supports strict require-db execution', () => {

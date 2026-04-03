@@ -174,10 +174,22 @@ async function runWithRetry(fn, options) {
   }
 }
 
+function resolveCsvPath(argvPath) {
+  const explicitArg = argvPath?.trim();
+  if (explicitArg) {
+    return path.resolve(explicitArg);
+  }
+
+  const fromEnv = process.env.HOMENET_CSV_PATH?.trim();
+  if (fromEnv) {
+    return path.resolve(fromEnv);
+  }
+
+  return path.resolve(process.cwd(), 'data/homenet/latest.csv');
+}
+
 async function main() {
-  const csvPath =
-    process.argv[2] ??
-    '/Users/tonisultzberg@icloud.com/Desktop/InventoryReport-3-30-2026 (1).csv';
+  const csvPath = resolveCsvPath(process.argv[2]);
   const outputPath = process.argv[3] ?? null;
   const databaseUrl = process.env.DATABASE_URL;
   const maxRetries = parseIntEnv('INVENTORY_IMPORT_MAX_RETRIES', 2);
@@ -190,6 +202,8 @@ async function main() {
 
   if (!fs.existsSync(csvPath)) {
     console.error(`CSV not found: ${csvPath}`);
+    console.error('Pass file path as arg: npm run inventory:import:homenet:file -- "/abs/path/feed.csv"');
+    console.error('Or set HOMENET_CSV_PATH, or place file at ./data/homenet/latest.csv');
     process.exit(1);
   }
 

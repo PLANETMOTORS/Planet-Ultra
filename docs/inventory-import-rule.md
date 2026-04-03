@@ -21,8 +21,11 @@ Date: March 30, 2026
 1. Ensure `DATABASE_URL` is set.
 2. Apply migration in Neon SQL editor.
 3. Run importer:
-   - default file:
+   - default file path in repo:
      - `npm run inventory:import:homenet`
+     - expected location: `./data/homenet/latest.csv`
+   - env-defined file:
+     - `HOMENET_CSV_PATH="/absolute/path/to/feed.csv" npm run inventory:import:homenet`
    - explicit file path:
      - `npm run inventory:import:homenet:file -- "/absolute/path/to/feed.csv"`
 4. Generate evidence:
@@ -30,5 +33,9 @@ Date: March 30, 2026
    - strict DB closeout mode:
      - `node scripts/generate-inventory-ingest-evidence.mjs artifacts/inventory-proof.json --require-db --strict`
 
-## Source file used for initial implementation
-- `/Users/tonisultzberg@icloud.com/Desktop/InventoryReport-3-30-2026 (1).csv`
+## Notes
+- No personal machine path is hardcoded in importer runtime.
+- Runtime resolution order for input CSV:
+  1. CLI arg (`process.argv[2]`)
+  2. `HOMENET_CSV_PATH`
+  3. `./data/homenet/latest.csv`
