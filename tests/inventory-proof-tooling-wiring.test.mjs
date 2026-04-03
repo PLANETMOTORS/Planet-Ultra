@@ -32,6 +32,8 @@ test('inventory proof script supports strict require-db execution', () => {
   assert.match(source, /--require-db/);
   assert.match(source, /--strict/);
   assert.match(source, /inventory_import_runs/);
+  assert.match(source, /fullReplaceSnapshot/);
+  assert.match(source, /TRUNCATE TABLE inventory_vehicles/);
   assert.match(source, /PASS_CANDIDATE/);
 });
 

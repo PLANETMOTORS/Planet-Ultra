@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { neon } from '@neondatabase/serverless';
+import { fileURLToPath } from 'node:url';
 
 function nowIso() {
   return new Date().toISOString();
@@ -69,8 +70,23 @@ async function buildReport(sql) {
     Number(latestRun.error_message ? 1 : 0) === 0 &&
     Number(latestRun.inventory_rows_after ?? -1) === inventoryRows;
 
+  const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
+  const importerPath = path.join(scriptsDir, 'import-homenet-inventory.mjs');
+  let fullReplaceSnapshot = false;
+  try {
+    const importerSource = fs.readFileSync(importerPath, 'utf8');
+    fullReplaceSnapshot = /TRUNCATE TABLE inventory_vehicles/.test(importerSource);
+  } catch {
+    fullReplaceSnapshot = false;
+  }
+
   return {
     generatedAt: nowIso(),
+    pipelineContract: {
+      importerScript: 'scripts/import-homenet-inventory.mjs',
+      fullReplaceSnapshot,
+      rule: 'Each HomeNet import replaces inventory_vehicles (TRUNCATE + INSERT in one transaction)',
+    },
     totals: {
       totalRuns,
       failedRuns,
@@ -78,7 +94,7 @@ async function buildReport(sql) {
     },
     latestRun,
     recentDeadLetters,
-    verdict: latestRunPass ? 'PASS_CANDIDATE' : 'IN_PROGRESS',
+    verdict: latestRunPass && fullReplaceSnapshot ? 'PASS_CANDIDATE' : 'IN_PROGRESS',
   };
 }
 
@@ -96,6 +112,11 @@ async function main() {
     }
     report = {
       generatedAt: nowIso(),
+      pipelineContract: {
+        importerScript: 'scripts/import-homenet-inventory.mjs',
+        fullReplaceSnapshot: true,
+        rule: 'Each HomeNet import replaces inventory_vehicles (TRUNCATE + INSERT in one transaction)',
+      },
       totals: {},
       latestRun: null,
       recentDeadLetters: [],
