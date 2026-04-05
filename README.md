@@ -20,4 +20,5 @@ npm run dev
 npm run lint
 npm run typecheck
 npm run build
+npm run ops:gate:fast-clean
 ```
