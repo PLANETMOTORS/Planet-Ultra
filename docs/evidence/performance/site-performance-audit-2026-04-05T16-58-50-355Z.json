@@ -1,0 +1,378 @@
+{
+  "generatedAt": "2026-04-05T16:58:50.355Z",
+  "thresholdMs": 200,
+  "attempts": 3,
+  "routesAudited": 25,
+  "targets": [
+    {
+      "target": "dev",
+      "baseUrl": "https://dev.planetmotors.ca",
+      "thresholdMs": 200,
+      "attempts": 3,
+      "totals": {
+        "routes": 25,
+        "speedPassCount": 25,
+        "statusPassCount": 25,
+        "strictPassCount": 25
+      },
+      "passRate": {
+        "speedPercent": 100,
+        "statusPercent": 100,
+        "strictPercent": 100
+      },
+      "rows": [
+        {
+          "route": "/",
+          "status": 200,
+          "samplesMs": [
+            192,
+            134,
+            51
+          ],
+          "avgMs": 126,
+          "maxMs": 192,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/inventory",
+          "status": 200,
+          "samplesMs": [
+            153,
+            54,
+            45
+          ],
+          "avgMs": 84,
+          "maxMs": 153,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/finance",
+          "status": 200,
+          "samplesMs": [
+            201,
+            85,
+            90
+          ],
+          "avgMs": 125,
+          "maxMs": 201,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/purchase",
+          "status": 200,
+          "samplesMs": [
+            152,
+            142,
+            95
+          ],
+          "avgMs": 130,
+          "maxMs": 152,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/protection",
+          "status": 200,
+          "samplesMs": [
+            263,
+            42,
+            104
+          ],
+          "avgMs": 136,
+          "maxMs": 263,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/sell-or-trade",
+          "status": 200,
+          "samplesMs": [
+            124,
+            88,
+            82
+          ],
+          "avgMs": 98,
+          "maxMs": 124,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/how-it-works",
+          "status": 200,
+          "samplesMs": [
+            146,
+            56,
+            41
+          ],
+          "avgMs": 81,
+          "maxMs": 146,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/about",
+          "status": 200,
+          "samplesMs": [
+            44,
+            45,
+            41
+          ],
+          "avgMs": 43,
+          "maxMs": 45,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/faq",
+          "status": 200,
+          "samplesMs": [
+            163,
+            49,
+            39
+          ],
+          "avgMs": 84,
+          "maxMs": 163,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/locations",
+          "status": 200,
+          "samplesMs": [
+            181,
+            42,
+            42
+          ],
+          "avgMs": 88,
+          "maxMs": 181,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/reviews",
+          "status": 200,
+          "samplesMs": [
+            159,
+            42,
+            41
+          ],
+          "avgMs": 81,
+          "maxMs": 159,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/delivery",
+          "status": 200,
+          "samplesMs": [
+            42,
+            48,
+            48
+          ],
+          "avgMs": 46,
+          "maxMs": 48,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/returns",
+          "status": 200,
+          "samplesMs": [
+            188,
+            49,
+            42
+          ],
+          "avgMs": 93,
+          "maxMs": 188,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/compare",
+          "status": 200,
+          "samplesMs": [
+            146,
+            40,
+            45
+          ],
+          "avgMs": 77,
+          "maxMs": 146,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/contact",
+          "status": 200,
+          "samplesMs": [
+            177,
+            46,
+            58
+          ],
+          "avgMs": 94,
+          "maxMs": 177,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/blog",
+          "status": 200,
+          "samplesMs": [
+            41,
+            42,
+            39
+          ],
+          "avgMs": 41,
+          "maxMs": 42,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/blog/how-to-buy-used-car-online-ontario",
+          "status": 200,
+          "samplesMs": [
+            317,
+            45,
+            145
+          ],
+          "avgMs": 169,
+          "maxMs": 317,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/blog/trade-in-vs-private-sale",
+          "status": 200,
+          "samplesMs": [
+            146,
+            41,
+            41
+          ],
+          "avgMs": 76,
+          "maxMs": 146,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/blog/vehicle-protection-plans-explained",
+          "status": 200,
+          "samplesMs": [
+            163,
+            48,
+            91
+          ],
+          "avgMs": 101,
+          "maxMs": 163,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/sign-in",
+          "status": 200,
+          "samplesMs": [
+            226,
+            141,
+            92
+          ],
+          "avgMs": 153,
+          "maxMs": 226,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/sign-up",
+          "status": 200,
+          "samplesMs": [
+            267,
+            180,
+            80
+          ],
+          "avgMs": 176,
+          "maxMs": 267,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/account",
+          "status": 307,
+          "samplesMs": [
+            65,
+            38,
+            84
+          ],
+          "avgMs": 62,
+          "maxMs": 84,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/saved",
+          "status": 307,
+          "samplesMs": [
+            36,
+            39,
+            38
+          ],
+          "avgMs": 38,
+          "maxMs": 39,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/profile",
+          "status": 307,
+          "samplesMs": [
+            39,
+            38,
+            53
+          ],
+          "avgMs": 43,
+          "maxMs": 53,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        },
+        {
+          "route": "/admin",
+          "status": 307,
+          "samplesMs": [
+            46,
+            36,
+            33
+          ],
+          "avgMs": 38,
+          "maxMs": 46,
+          "speedPass": true,
+          "statusPass": true,
+          "strictPass": true
+        }
+      ],
+      "failures": []
+    }
+  ]
+}
