@@ -11,6 +11,7 @@ const QUALITY_STEPS = [
   ['npm', ['run', 'lint']],
   ['npm', ['run', 'typecheck']],
   ['npm', ['test']],
+  ['npm', ['run', 'ops:links:check']],
   ['npm', ['run', 'build']],
 ];
 
