@@ -26,9 +26,10 @@ interface PurchasePageProps {
 export default async function PurchasePage({ searchParams }: PurchasePageProps) {
   const params = await searchParams;
   const ctx = parseVehicleCtaContext(params);
-  const userId = await getSessionUserId();
-  const search = new URLSearchParams(params).toString();
-  const signInUrl = `/sign-in?redirect_url=/purchase?${search}`;
+  const userId = ctx ? await getSessionUserId() : null;
+  const signInUrl = ctx
+    ? `/sign-in?redirect_url=/purchase?${new URLSearchParams(params).toString()}`
+    : '/sign-in?redirect_url=/purchase';
 
   return (
     <main>
