@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { parseVehicleCtaContext } from '@/lib/cta/context';
+import ProtectionQuoteForm from '@/components/protection/ProtectionQuoteForm';
 
 /**
  * /protection — public shell. Server Component.
@@ -111,21 +112,40 @@ export default async function ProtectionPage({ searchParams }: ProtectionPagePro
             </article>
           </div>
 
-          <article className="flow-card">
-            <h2>Quote Request Boundary</h2>
-            <p className="muted">
-              Protection quote requests are submitted through server-side boundary controls:
-              <code> POST /api/protection/quote</code>.
-            </p>
-            <div className="hero-actions">
-              <a className="button button-primary" href="/protection">
-                Request Protection Quote
-              </a>
-              <Link className="button button-secondary" href="/inventory">
-                Back to Inventory
-              </Link>
+          {ctx ? (
+            <div className="flow-grid">
+              <ProtectionQuoteForm
+                vehicleId={ctx.vehicleId}
+                vehicleYear={ctx.vehicleYear}
+                vehicleMake={ctx.vehicleMake}
+                vehicleModel={ctx.vehicleModel}
+                vehiclePriceCad={ctx.vehiclePriceCad}
+              />
+              <aside className="flow-card flow-steps">
+                <h3>Quote Sequence</h3>
+                <ol>
+                  <li>Select plan level and current mileage.</li>
+                  <li>Submit request through protected server boundary.</li>
+                  <li>Review quote output for plan comparison.</li>
+                  <li>Finalize during purchase and finance handoff.</li>
+                </ol>
+                <Link className="button button-secondary" href="/inventory">
+                  Back to Inventory
+                </Link>
+              </aside>
             </div>
-          </article>
+          ) : (
+            <article className="flow-card">
+              <h2>Select a Vehicle for Quote</h2>
+              <p className="muted">
+                Protection quote requires vehicle context. Open a vehicle detail page and use the
+                protection CTA to prefill this flow.
+              </p>
+              <Link className="button button-primary" href="/inventory">
+                Choose Vehicle
+              </Link>
+            </article>
+          )}
         </div>
       </section>
 

@@ -786,6 +786,71 @@ a {
   gap: 7px;
 }
 
+.protection-selection-row {
+  grid-column: 1 / -1;
+  margin-top: 2px;
+}
+
+.protection-selection-label {
+  display: block;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #5e6f84;
+  margin-bottom: 6px;
+}
+
+.protection-selection-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.protection-selection-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #d4deeb;
+  border-radius: 9px;
+  background: #f8fbff;
+  min-height: 38px;
+  padding: 0 10px;
+  color: #2e425a;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.protection-selection-item input {
+  margin: 0;
+}
+
+.protection-quote-result {
+  margin-top: 12px;
+}
+
+.protection-quote-grid {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.protection-quote-card {
+  border: 1px solid #dbe3ee;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 10px;
+}
+
+.protection-quote-card h3 {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.protection-quote-card .muted {
+  margin: 5px 0 0;
+  font-size: 0.8rem;
+}
+
 /* Sell / Trade flow */
 .sell-flow {
   padding-top: 30px;
@@ -1164,6 +1229,8 @@ a {
   .inventory-grid,
   .flow-field-grid,
   .sell-accept-grid,
+  .protection-selection-grid,
+  .protection-quote-grid,
   .protection-grid,
   .promo-grid,
   .three-up,

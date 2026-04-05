@@ -18,8 +18,14 @@ const QuoteSchema = z.object({
   vehicleModel: z.string().min(1).max(100),
   vehiclePriceCad: z.number().positive(),
   mileageKm: z.number().int().positive(),
-  products: z.array(z.string()).optional(),
+  products: z.array(z.enum(['essential', 'comprehensive', 'ultimate'])).optional(),
 });
+
+const planConfig: Record<'essential' | 'comprehensive' | 'ultimate', { months: number; rate: number; deductibleCad: number; name: string }> = {
+  essential: { months: 12, rate: 0.018, deductibleCad: 500, name: 'Essential' },
+  comprehensive: { months: 24, rate: 0.031, deductibleCad: 300, name: 'Comprehensive' },
+  ultimate: { months: 36, rate: 0.044, deductibleCad: 200, name: 'Ultimate' },
+};
 
 export async function POST(req: NextRequest) {
   let body: unknown;
@@ -37,13 +43,34 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Stub response — returns 202 Accepted with clear stub labeling
+  const selectedProducts: Array<keyof typeof planConfig> =
+    parsed.data.products && parsed.data.products.length > 0
+      ? parsed.data.products
+      : ['comprehensive'];
+
+  const mileageFactor =
+    parsed.data.mileageKm > 150000 ? 1.2 : parsed.data.mileageKm > 90000 ? 1.1 : 1;
+
+  const quotes = selectedProducts.map((code) => {
+    const config = planConfig[code];
+    const totalCad = Math.round(parsed.data.vehiclePriceCad * config.rate * mileageFactor);
+    const monthlyCad = Math.round(totalCad / config.months);
+    return {
+      code,
+      name: config.name,
+      monthlyCad,
+      totalCad,
+      deductibleCad: config.deductibleCad,
+    };
+  });
+
+  // Stub response — deterministic quote preview for UI/flow testing.
   return NextResponse.json(
     {
       status: 'stub',
-      message: 'Protection quote integration is reserved for a future phase.',
+      message: 'Protection quote preview generated. Provider integration remains a future phase.',
       vehicleId: parsed.data.vehicleId,
-      quotes: [],
+      quotes,
     },
     { status: 202 },
   );
