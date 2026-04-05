@@ -851,6 +851,62 @@ a {
   font-size: 0.8rem;
 }
 
+.flow-steps-list {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: #45576c;
+  font-size: 0.88rem;
+  display: grid;
+  gap: 7px;
+}
+
+.blog-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.blog-card {
+  border: 1px solid #dbe3ee;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 14px;
+  box-shadow: 0 8px 18px rgba(20, 40, 65, 0.05);
+}
+
+.blog-card h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+
+.blog-card .muted {
+  margin: 8px 0 0;
+}
+
+.blog-card .button {
+  margin-top: 12px;
+}
+
+.blog-post-shell {
+  border: 1px solid #dbe3ee;
+  border-radius: 16px;
+  background: #ffffff;
+  padding: 22px;
+  box-shadow: 0 10px 22px rgba(21, 41, 65, 0.05);
+}
+
+.blog-post-shell h1 {
+  margin: 0 0 10px;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  line-height: 1.08;
+}
+
+.blog-post-shell p {
+  margin: 10px 0 0;
+  color: #415266;
+}
+
 /* Sell / Trade flow */
 .sell-flow {
   padding-top: 30px;
@@ -1226,6 +1282,7 @@ a {
   }
 
   .home-card-grid,
+  .blog-card-grid,
   .inventory-grid,
   .flow-field-grid,
   .sell-accept-grid,

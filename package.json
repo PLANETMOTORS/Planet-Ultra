@@ -20,6 +20,7 @@
     "ops:proof:crm": "node scripts/generate-crm-evidence.mjs",
     "ops:alerts": "node scripts/check-ops-alerts.mjs",
     "ops:security:check": "node scripts/security-baseline-check.mjs",
+    "ops:perf:pages": "node scripts/check-page-speed.mjs",
     "ops:debug:full": "node scripts/run-full-debug-check.mjs",
     "ops:close:a6": "node scripts/run-a6-closeout.mjs",
     "ops:env:a6": "node scripts/run-a6-closeout.mjs --env-only"
