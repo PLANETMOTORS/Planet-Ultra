@@ -700,6 +700,16 @@ a {
   font-size: 0.85rem;
 }
 
+.flow-field-grid select {
+  min-height: 38px;
+  border: 1px solid #d4deeb;
+  border-radius: 9px;
+  background: #f8fbff;
+  color: #2e425a;
+  padding: 0 10px;
+  font-size: 0.85rem;
+}
+
 .flow-note {
   margin-top: 10px;
   font-size: 0.85rem;
@@ -765,6 +775,112 @@ a {
   font-size: 0.86rem;
   display: grid;
   gap: 7px;
+}
+
+/* Sell / Trade flow */
+.sell-flow {
+  padding-top: 30px;
+}
+
+.sell-form-card {
+  margin-top: 0;
+}
+
+.sell-form-submit-row {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+}
+
+.sell-form-submit-row .button {
+  width: 100%;
+}
+
+.sell-form-error {
+  margin: 10px 0 0;
+  color: #a53b3b;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.sell-form-success {
+  margin: 10px 0 0;
+  color: #0e6d47;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.sell-offer-result {
+  margin-top: 14px;
+  border: 1px solid #d4e7f9;
+  border-radius: 12px;
+  background: #f5faff;
+  padding: 12px;
+}
+
+.sell-offer-result h3 {
+  margin: 0;
+  font-size: clamp(1.7rem, 2.8vw, 2.2rem);
+  color: #0a4f8f;
+  letter-spacing: -0.02em;
+}
+
+.sell-offer-result .muted {
+  margin: 7px 0 0;
+}
+
+.sell-accept-grid {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.sell-accept-grid label {
+  display: grid;
+  gap: 6px;
+}
+
+.sell-accept-grid span {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #5e6f84;
+}
+
+.sell-accept-grid input,
+.sell-accept-grid select {
+  min-height: 38px;
+  border: 1px solid #d4deeb;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #2e425a;
+  padding: 0 10px;
+  font-size: 0.85rem;
+}
+
+.sell-offer-actions {
+  margin-top: 12px;
+}
+
+.sell-api-card {
+  margin-top: 14px;
+}
+
+.sell-api-chip-row {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sell-api-chip-row code {
+  display: inline-block;
+  background: #f2f7ff;
+  border: 1px solid #d7e3f5;
+  color: #0b3f75;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.74rem;
+  font-weight: 700;
 }
 
 /* VDP page */
@@ -1038,6 +1154,7 @@ a {
   .home-card-grid,
   .inventory-grid,
   .flow-field-grid,
+  .sell-accept-grid,
   .protection-grid,
   .promo-grid,
   .three-up,
