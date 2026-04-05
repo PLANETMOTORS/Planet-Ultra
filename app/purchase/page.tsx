@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import Link from 'next/link';
-import { parseVehicleCtaContext } from '@/lib/cta/context';
-import { getSessionUserId } from '@/lib/auth/session';
-import PurchaseCheckoutCard from '@/components/purchase/PurchaseCheckoutCard';
+import PurchaseFlowClient from '@/components/purchase/PurchaseFlowClient';
 
 /**
  * /purchase — public shell, auth-aware. Server Component.
@@ -11,26 +10,13 @@ import PurchaseCheckoutCard from '@/components/purchase/PurchaseCheckoutCard';
  * The deposit Stripe session is created via /api/purchase/submit (server boundary).
  * No Stripe keys or payment logic are ever in this component.
  */
-export const dynamic = 'force-dynamic';
-
 export const metadata: Metadata = {
   title: 'Start Purchase',
   description: 'Secure your vehicle with a refundable deposit at Planet Motors.',
   robots: { index: false, follow: false },
 };
 
-interface PurchasePageProps {
-  searchParams: Promise<Record<string, string>>;
-}
-
-export default async function PurchasePage({ searchParams }: PurchasePageProps) {
-  const params = await searchParams;
-  const ctx = parseVehicleCtaContext(params);
-  const userId = ctx ? await getSessionUserId() : null;
-  const signInUrl = ctx
-    ? `/sign-in?redirect_url=/purchase?${new URLSearchParams(params).toString()}`
-    : '/sign-in?redirect_url=/purchase';
-
+export default function PurchasePage() {
   return (
     <main>
       <header className="topbar">
@@ -76,63 +62,18 @@ export default async function PurchasePage({ searchParams }: PurchasePageProps) 
             </div>
           </div>
 
-          {ctx ? (
-            <>
-              <article className="flow-context-card">
-                <p className="eyebrow">Securing</p>
-                <h2>
-                  {ctx.vehicleYear} {ctx.vehicleMake} {ctx.vehicleModel}
-                </h2>
+          <Suspense
+            fallback={
+              <article className="flow-card">
+                <h2>Loading Purchase Context…</h2>
                 <p className="muted">
-                  Listed at ${ctx.vehiclePriceCad.toLocaleString('en-CA')}
+                  Preparing your checkout details. If this takes a moment, continue browsing inventory.
                 </p>
               </article>
-
-              {!userId && (
-                <article className="flow-card purchase-auth-card">
-                  <h2>Sign In Required</h2>
-                  <p className="muted">
-                    Please sign in to create a deposit checkout session for this vehicle.
-                  </p>
-                  <a className="button button-primary" href={signInUrl}>
-                    Sign In to Continue
-                  </a>
-                </article>
-              )}
-
-              {userId && (
-                <div className="flow-grid">
-                  <PurchaseCheckoutCard
-                    vehicleId={ctx.vehicleId}
-                    vehicleSlug={ctx.vehicleSlug}
-                    vehicleLabel={`${ctx.vehicleYear} ${ctx.vehicleMake} ${ctx.vehicleModel}`}
-                    vehiclePriceCad={ctx.vehiclePriceCad}
-                  />
-
-                  <aside className="flow-card flow-steps">
-                    <h3>Checkout Sequence</h3>
-                    <ol>
-                      <li>Validate signed-in user and vehicle reference.</li>
-                      <li>Create Stripe deposit session server-side.</li>
-                      <li>Persist purchase lifecycle submission and event trail.</li>
-                      <li>Send CRM dispatch receipt and continue to delivery scheduling.</li>
-                    </ol>
-                    <Link className="button button-secondary" href="/inventory">
-                      Back to Inventory
-                    </Link>
-                  </aside>
-                </div>
-              )}
-            </>
-          ) : (
-            <article className="flow-card">
-              <h2>No Vehicle Selected</h2>
-              <p className="muted">
-                Please <Link href="/inventory">browse inventory</Link> and use the purchase button on
-                a vehicle detail page.
-              </p>
-            </article>
-          )}
+            }
+          >
+            <PurchaseFlowClient />
+          </Suspense>
         </div>
       </section>
 
