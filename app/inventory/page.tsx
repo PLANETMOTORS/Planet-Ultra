@@ -26,6 +26,7 @@ export const metadata: Metadata = {
 
 export default async function InventoryPage() {
   const cards = await getInventoryCards(120);
+  const availableCount = cards.length;
 
   return (
     <main>
@@ -40,35 +41,87 @@ export default async function InventoryPage() {
             </Link>
             <a href="/sell-or-trade">Sell or Trade</a>
             <a href="/finance">Finance</a>
+            <a href="/protection">Protection</a>
           </nav>
         </div>
       </header>
 
       <section className="section">
         <div className="container">
-          <div className="section-heading">
-            <h1>Used Vehicle Inventory</h1>
-            <p className="muted">
-              Quality used vehicles from an OMVIC registered Ontario dealer.
-            </p>
+          <div className="inventory-hero">
+            <div>
+              <p className="eyebrow">Live Inventory</p>
+              <h1>Used Vehicle Inventory</h1>
+              <p className="muted">
+                Live vehicle cards sourced from the latest HomeNet snapshot with canonical VDP
+                routing.
+              </p>
+              <div className="hero-actions">
+                <Link className="button button-primary" href="/finance">
+                  Get Pre-Approved
+                </Link>
+                <Link className="button button-secondary" href="/sell-or-trade">
+                  Start Trade-In
+                </Link>
+              </div>
+            </div>
+            <div className="inventory-kpi">
+              <article>
+                <strong>{availableCount}</strong>
+                <span>Vehicles available now</span>
+              </article>
+              <article>
+                <strong>5m</strong>
+                <span>Revalidation cadence</span>
+              </article>
+              <article>
+                <strong>100%</strong>
+                <span>Canonical VDP routing</span>
+              </article>
+            </div>
           </div>
-          <div className="card-grid three-up" aria-label="Vehicle inventory">
+
+          <div className="inventory-grid" aria-label="Vehicle inventory">
             {cards.length === 0 ? (
-              <p className="muted">No inventory found. Run the HomeNet import to load vehicles.</p>
+              <article className="inventory-empty">
+                <h2>No Inventory Loaded Yet</h2>
+                <p className="muted">
+                  Run the HomeNet importer to load the latest snapshot and refresh this listing.
+                </p>
+                <code>npm run inventory:import:homenet:file -- &quot;/absolute/path/feed.csv&quot;</code>
+              </article>
             ) : (
               cards.map(({ vehicle, canonicalPath }) => (
-                <article className="card vehicle-card" key={vehicle.vin}>
-                  <h3>
-                    {vehicle.year} {vehicle.make} {vehicle.model}
-                  </h3>
-                  <p className="muted">{vehicle.trim || 'Trim not listed'}</p>
-                  <p>
-                    <strong>${vehicle.priceCad.toLocaleString('en-CA')}</strong>
-                  </p>
-                  <p className="muted">{vehicle.mileageKm.toLocaleString('en-CA')} km</p>
-                  <Link className="button button-secondary" href={canonicalPath}>
-                    View Details
+                <article className="inventory-card" key={vehicle.vin}>
+                  <Link href={canonicalPath} aria-label={`View ${vehicle.year} ${vehicle.make} ${vehicle.model}`}>
+                    {vehicle.heroImage?.url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={vehicle.heroImage.url}
+                        alt={vehicle.heroImage.alt || `${vehicle.year} ${vehicle.make} ${vehicle.model}`}
+                        className="inventory-card-image"
+                        width={900}
+                        height={560}
+                      />
+                    ) : (
+                      <div className="inventory-card-image inventory-card-fallback">Vehicle Photo</div>
+                    )}
                   </Link>
+                  <div className="inventory-card-body">
+                    <h3>
+                      {vehicle.year} {vehicle.make} {vehicle.model}
+                    </h3>
+                    <p>{vehicle.trim || 'Trim not listed'}</p>
+                    <div className="inventory-tags">
+                      <span>{vehicle.mileageKm.toLocaleString('en-CA')} km</span>
+                      <span>{vehicle.drivetrain || 'AWD/2WD'}</span>
+                      <span>{vehicle.transmission || 'Auto'}</span>
+                    </div>
+                    <div className="inventory-card-footer">
+                      <strong>${(vehicle.salePriceCad ?? vehicle.priceCad).toLocaleString('en-CA')}</strong>
+                      <Link href={canonicalPath}>View Details</Link>
+                    </div>
+                  </div>
                 </article>
               ))
             )}
