@@ -21,6 +21,7 @@
     "ops:alerts": "node scripts/check-ops-alerts.mjs",
     "ops:security:check": "node scripts/security-baseline-check.mjs",
     "ops:perf:pages": "node scripts/check-page-speed.mjs",
+    "ops:audit:site": "node scripts/audit-site-performance.mjs",
     "ops:links:check": "node scripts/check-internal-links.mjs",
     "ops:gate:fast-clean": "node scripts/run-fast-clean-gate.mjs",
     "ops:debug:full": "node scripts/run-full-debug-check.mjs",
