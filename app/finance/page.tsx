@@ -66,8 +66,14 @@ export default function FinancePage() {
           <Suspense
             fallback={
               <article className="flow-card">
-                <h2>Loading Finance Context...</h2>
-                <p className="muted">Preparing your application flow.</p>
+                <h2>Select a Vehicle First</h2>
+                <p className="muted">
+                  Finance submissions require a vehicle reference. Please start from an inventory
+                  vehicle detail page so the application is tied to the correct unit.
+                </p>
+                <Link className="button button-primary" href="/inventory">
+                  Choose Vehicle
+                </Link>
               </article>
             }
           >
