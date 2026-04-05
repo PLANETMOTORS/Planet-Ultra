@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { parseVehicleCtaContext } from '@/lib/cta/context';
+import FinanceLeadForm from '@/components/finance/FinanceLeadForm';
 
 /**
  * /finance — public. Server Component.
@@ -84,45 +85,25 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
           )}
 
           <div className="flow-grid">
-            <article className="flow-card">
-              <h2>Application Shell</h2>
-              <p className="muted">
-                Complete the fields below and submit to the finance boundary route. PII is validated
-                server-side and never written to Postgres.
-              </p>
-
-              {/* Non-functional shell fields for UX review; API route remains JSON boundary. */}
-              <div className="flow-field-grid" aria-label="Finance form shell">
-                <label>
-                  <span>First name</span>
-                  <input type="text" placeholder="John" readOnly />
-                </label>
-                <label>
-                  <span>Last name</span>
-                  <input type="text" placeholder="Doe" readOnly />
-                </label>
-                <label>
-                  <span>Email</span>
-                  <input type="email" placeholder="john@email.com" readOnly />
-                </label>
-                <label>
-                  <span>Phone</span>
-                  <input type="tel" placeholder="+1 (___) ___-____" readOnly />
-                </label>
-                <label>
-                  <span>Down payment</span>
-                  <input type="text" placeholder="$2,000" readOnly />
-                </label>
-                <label>
-                  <span>Term</span>
-                  <input type="text" placeholder="72 months" readOnly />
-                </label>
-              </div>
-
-              <p className="muted flow-note">
-                Finance submit boundary: <code>POST /api/finance/submit</code>
-              </p>
-            </article>
+            {ctx ? (
+              <FinanceLeadForm
+                vehicleId={ctx.vehicleId}
+                vehicleSlug={ctx.vehicleSlug}
+                vehicleLabel={`${ctx.vehicleYear} ${ctx.vehicleMake} ${ctx.vehicleModel}`}
+                vehiclePriceCad={ctx.vehiclePriceCad}
+              />
+            ) : (
+              <article className="flow-card">
+                <h2>Select a Vehicle First</h2>
+                <p className="muted">
+                  Finance submissions require a vehicle reference. Please start from an inventory
+                  vehicle detail page so the application is tied to the correct unit.
+                </p>
+                <Link className="button button-primary" href="/inventory">
+                  Choose Vehicle
+                </Link>
+              </article>
+            )}
 
             <aside className="flow-card flow-steps">
               <h3>What Happens Next</h3>

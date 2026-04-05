@@ -710,6 +710,15 @@ a {
   font-size: 0.85rem;
 }
 
+.flow-submit-row {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+}
+
+.flow-submit-row .button {
+  width: 100%;
+}
+
 .flow-note {
   margin-top: 10px;
   font-size: 0.85rem;
