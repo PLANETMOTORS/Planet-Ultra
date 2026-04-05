@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { parseVehicleCtaContext } from '@/lib/cta/context';
 import { getSessionUserId } from '@/lib/auth/session';
+import PurchaseCheckoutCard from '@/components/purchase/PurchaseCheckoutCard';
 
 /**
  * /purchase — public shell, auth-aware. Server Component.
@@ -100,26 +101,12 @@ export default async function PurchasePage({ searchParams }: PurchasePageProps) 
 
               {userId && (
                 <div className="flow-grid">
-                  <article className="flow-card">
-                    <h2>Deposit Checkout</h2>
-                    <p className="muted">
-                      A refundable deposit secures this vehicle for you. Checkout session creation is
-                      routed through <code>POST /api/purchase/submit</code>.
-                    </p>
-                    <div className="flow-field-grid" aria-label="Purchase checkout shell">
-                      <label>
-                        <span>Vehicle ID</span>
-                        <input type="text" value={ctx.vehicleId} readOnly />
-                      </label>
-                      <label>
-                        <span>Vehicle Slug</span>
-                        <input type="text" value={ctx.vehicleSlug} readOnly />
-                      </label>
-                    </div>
-                    <p className="muted flow-note">
-                      Live Stripe redirect CTA wiring is next runtime step after env closeout.
-                    </p>
-                  </article>
+                  <PurchaseCheckoutCard
+                    vehicleId={ctx.vehicleId}
+                    vehicleSlug={ctx.vehicleSlug}
+                    vehicleLabel={`${ctx.vehicleYear} ${ctx.vehicleMake} ${ctx.vehicleModel}`}
+                    vehiclePriceCad={ctx.vehiclePriceCad}
+                  />
 
                   <aside className="flow-card flow-steps">
                     <h3>Checkout Sequence</h3>

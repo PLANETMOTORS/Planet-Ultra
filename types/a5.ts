@@ -46,6 +46,7 @@ export interface DepositIntentResult {
   publishableKey: string;
   vehicleId: string;
   amountCents: number;
+  checkoutUrl?: string;
   purchaseSubmissionId?: string;
 }
 

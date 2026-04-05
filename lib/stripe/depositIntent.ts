@@ -88,5 +88,6 @@ export async function createDepositSession(
     publishableKey,
     vehicleId: request.vehicleId,
     amountCents: DEPOSIT_AMOUNT_CENTS,
+    checkoutUrl: session.url ?? undefined,
   };
 }
