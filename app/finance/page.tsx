@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { parseVehicleCtaContext } from '@/lib/cta/context';
-import FinanceLeadForm from '@/components/finance/FinanceLeadForm';
+import { Suspense } from 'react';
+import FinanceRuntimePanel from '@/components/finance/FinanceRuntimePanel';
 
 /**
  * /finance — public. Server Component.
@@ -10,8 +10,6 @@ import FinanceLeadForm from '@/components/finance/FinanceLeadForm';
  * Pre-fills vehicle info from params — no business logic in UI.
  * Finance submission goes to /api/finance/submit (server boundary).
  */
-export const dynamic = 'force-dynamic';
-
 export const metadata: Metadata = {
   title: 'Apply for Financing',
   description:
@@ -19,14 +17,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/finance' },
 };
 
-interface FinancePageProps {
-  searchParams: Promise<Record<string, string>>;
-}
-
-export default async function FinancePage({ searchParams }: FinancePageProps) {
-  const params = await searchParams;
-  const ctx = parseVehicleCtaContext(params);
-
+export default function FinancePage() {
   return (
     <main>
       <header className="topbar">
@@ -72,52 +63,16 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
             </div>
           </div>
 
-          {ctx && (
-            <article className="flow-context-card">
-              <p className="eyebrow">Financing for</p>
-              <h2>
-                {ctx.vehicleYear} {ctx.vehicleMake} {ctx.vehicleModel}
-              </h2>
-              <p className="muted">
-                Listed at ${ctx.vehiclePriceCad.toLocaleString('en-CA')}
-              </p>
-            </article>
-          )}
-
-          <div className="flow-grid">
-            {ctx ? (
-              <FinanceLeadForm
-                vehicleId={ctx.vehicleId}
-                vehicleSlug={ctx.vehicleSlug}
-                vehicleLabel={`${ctx.vehicleYear} ${ctx.vehicleMake} ${ctx.vehicleModel}`}
-                vehiclePriceCad={ctx.vehiclePriceCad}
-              />
-            ) : (
+          <Suspense
+            fallback={
               <article className="flow-card">
-                <h2>Select a Vehicle First</h2>
-                <p className="muted">
-                  Finance submissions require a vehicle reference. Please start from an inventory
-                  vehicle detail page so the application is tied to the correct unit.
-                </p>
-                <Link className="button button-primary" href="/inventory">
-                  Choose Vehicle
-                </Link>
+                <h2>Loading Finance Context...</h2>
+                <p className="muted">Preparing your application flow.</p>
               </article>
-            )}
-
-            <aside className="flow-card flow-steps">
-              <h3>What Happens Next</h3>
-              <ol>
-                <li>Application is validated at server boundary.</li>
-                <li>Vehicle facts are resolved from live inventory source of truth.</li>
-                <li>Lead is queued and dispatched to lender/CRM pipeline.</li>
-                <li>Team follows up with options and next steps.</li>
-              </ol>
-              <Link className="button button-secondary" href="/inventory">
-                Back to Inventory
-              </Link>
-            </aside>
-          </div>
+            }
+          >
+            <FinanceRuntimePanel />
+          </Suspense>
         </div>
       </section>
 
