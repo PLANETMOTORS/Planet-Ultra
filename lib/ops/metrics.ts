@@ -1,0 +1,124 @@
+import type { NeonQueryFunction } from '@neondatabase/serverless';
+import { getDatabaseSql } from '@/lib/db/sql';
+
+type Sql = NeonQueryFunction<false, false>;
+
+function getSql(): Sql | null {
+  return getDatabaseSql();
+}
+
+async function scalarCount(sql: Sql, query: string): Promise<number | null> {
+  try {
+    const rows = (await sql.query(query)) as Array<{ count: number }>;
+    return Number(rows[0]?.count ?? 0);
+  } catch {
+    return null;
+  }
+}
+
+export interface OpsSnapshot {
+  databaseConfigured: boolean;
+  inventoryRows: number | null;
+  financeSubmissions: number | null;
+  financeDeadLetter: number | null;
+  purchaseSubmissions: number | null;
+  purchaseRefunded: number | null;
+  deliverySubmissions: number | null;
+  deliveryFailed: number | null;
+  tradeInSubmissions: number | null;
+  tradeInCompleted: number | null;
+  webhookReceived: number | null;
+  webhookFailed: number | null;
+  crmSent: number | null;
+  crmDeadLetter: number | null;
+}
+
+export async function getOpsSnapshot(): Promise<OpsSnapshot> {
+  const sql = getSql();
+  if (!sql) {
+    return {
+      databaseConfigured: false,
+      inventoryRows: null,
+      financeSubmissions: null,
+      financeDeadLetter: null,
+      purchaseSubmissions: null,
+      purchaseRefunded: null,
+      deliverySubmissions: null,
+      deliveryFailed: null,
+      tradeInSubmissions: null,
+      tradeInCompleted: null,
+      webhookReceived: null,
+      webhookFailed: null,
+      crmSent: null,
+      crmDeadLetter: null,
+    };
+  }
+
+  const [
+    inventoryRows,
+    financeSubmissions,
+    financeDeadLetter,
+    purchaseSubmissions,
+    purchaseRefunded,
+    deliverySubmissions,
+    deliveryFailed,
+    tradeInSubmissions,
+    tradeInCompleted,
+    webhookReceived,
+    webhookFailed,
+    crmSent,
+    crmDeadLetter,
+  ] = await Promise.all([
+    scalarCount(sql, 'SELECT COUNT(*)::int AS count FROM inventory_vehicles'),
+    scalarCount(sql, 'SELECT COUNT(*)::int AS count FROM finance_submissions'),
+    scalarCount(
+      sql,
+      "SELECT COUNT(*)::int AS count FROM finance_submissions WHERE status = 'dead_letter'",
+    ),
+    scalarCount(sql, 'SELECT COUNT(*)::int AS count FROM purchase_submissions'),
+    scalarCount(
+      sql,
+      "SELECT COUNT(*)::int AS count FROM purchase_submissions WHERE status = 'refunded'",
+    ),
+    scalarCount(sql, 'SELECT COUNT(*)::int AS count FROM delivery_submissions'),
+    scalarCount(
+      sql,
+      "SELECT COUNT(*)::int AS count FROM delivery_submissions WHERE status = 'failed'",
+    ),
+    scalarCount(sql, 'SELECT COUNT(*)::int AS count FROM tradein_submissions'),
+    scalarCount(
+      sql,
+      "SELECT COUNT(*)::int AS count FROM tradein_submissions WHERE status = 'completed'",
+    ),
+    scalarCount(sql, 'SELECT COUNT(*)::int AS count FROM webhook_events'),
+    scalarCount(
+      sql,
+      "SELECT COUNT(*)::int AS count FROM webhook_events WHERE status = 'failed'",
+    ),
+    scalarCount(
+      sql,
+      "SELECT COUNT(*)::int AS count FROM crm_dispatch_log WHERE status = 'sent'",
+    ),
+    scalarCount(
+      sql,
+      'SELECT COUNT(*)::int AS count FROM crm_dispatch_log WHERE dead_letter = TRUE',
+    ),
+  ]);
+
+  return {
+    databaseConfigured: true,
+    inventoryRows,
+    financeSubmissions,
+    financeDeadLetter,
+    purchaseSubmissions,
+    purchaseRefunded,
+    deliverySubmissions,
+    deliveryFailed,
+    tradeInSubmissions,
+    tradeInCompleted,
+    webhookReceived,
+    webhookFailed,
+    crmSent,
+    crmDeadLetter,
+  };
+}

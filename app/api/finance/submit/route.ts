@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import { submitFinanceApplication } from '@/lib/finance/submissionBoundary';
-import { dispatchCrmEvent, buildFinanceLeadEvent } from '@/lib/crm/autoraptor';
+import { dispatchCrmEventWithReceipt, buildFinanceLeadEvent } from '@/lib/crm/autoraptor';
+import { checkRateLimit, buildRateLimitedResponse } from '@/lib/security/rateLimit';
+import { getInventoryVehicleByReference } from '@/lib/inventory/repository';
 import type { FinanceApplicationPayload } from '@/types/a5';
 
 /**
@@ -16,19 +18,15 @@ import type { FinanceApplicationPayload } from '@/types/a5';
  * - PII fields (firstName, lastName, email, phone) are accepted from the
  *   client, validated with Zod, and then passed directly to the lender
  *   adapter. They are never written to Postgres.
- * - Vehicle facts (year, make, model, price) come from the client but are
- *   validated; production callers should pass values fetched from Postgres.
+ * - Vehicle facts (year, make, model, price) are resolved from inventory DB.
+ *   Client-supplied values are not used as source-of-truth.
  * - No finance calculation logic runs here — calculations stay in FinanceEngine.
  */
 
 const FinanceSubmitSchema = z.object({
-  // Vehicle context
+  // Vehicle reference (truth resolved from inventory DB)
   vehicleId: z.string().min(1).max(255),
   vehicleSlug: z.string().min(1).max(500),
-  vehicleYear: z.number().int().min(1900).max(2100),
-  vehicleMake: z.string().min(1).max(100),
-  vehicleModel: z.string().min(1).max(100),
-  vehiclePriceCad: z.number().positive(),
 
   // Applicant — PII, validated but never stored in Postgres
   firstName: z.string().min(1).max(100),
@@ -44,6 +42,14 @@ const FinanceSubmitSchema = z.object({
 export async function POST(req: NextRequest) {
   // Resolve session — optional for finance applications
   const { userId } = await auth();
+  const rateDecision = await checkRateLimit(
+    req,
+    { name: 'finance_submit', limit: 5, windowSeconds: 60 },
+    { userId },
+  );
+  if (!rateDecision.allowed) {
+    return buildRateLimitedResponse(rateDecision);
+  }
 
   let body: unknown;
   try {
@@ -60,8 +66,30 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const verifiedVehicle = await getInventoryVehicleByReference(
+    parsed.data.vehicleId,
+    parsed.data.vehicleSlug,
+  );
+  if (!verifiedVehicle || verifiedVehicle.status === 'sold') {
+    return NextResponse.json(
+      { error: 'Vehicle unavailable or reference mismatch' },
+      { status: 409 },
+    );
+  }
+
   const payload: FinanceApplicationPayload = {
-    ...parsed.data,
+    vehicleId: verifiedVehicle.id,
+    vehicleSlug: verifiedVehicle.slug,
+    vehicleYear: verifiedVehicle.year,
+    vehicleMake: verifiedVehicle.make,
+    vehicleModel: verifiedVehicle.model,
+    vehiclePriceCad: verifiedVehicle.priceCad,
+    firstName: parsed.data.firstName,
+    lastName: parsed.data.lastName,
+    email: parsed.data.email,
+    phone: parsed.data.phone,
+    downPaymentCad: parsed.data.downPaymentCad,
+    termMonths: parsed.data.termMonths,
     clerkUserId: userId ?? null,
   };
 
@@ -69,12 +97,12 @@ export async function POST(req: NextRequest) {
     const result = await submitFinanceApplication(payload);
 
     // Dispatch CRM finance lead event — fire-and-forget, non-blocking
-    dispatchCrmEvent(buildFinanceLeadEvent({
-      vehicleId: parsed.data.vehicleId,
-      vehicleSlug: parsed.data.vehicleSlug,
-      vehicleYear: parsed.data.vehicleYear,
-      vehicleMake: parsed.data.vehicleMake,
-      vehicleModel: parsed.data.vehicleModel,
+    dispatchCrmEventWithReceipt('api.finance.submit', buildFinanceLeadEvent({
+      vehicleId: verifiedVehicle.id,
+      vehicleSlug: verifiedVehicle.slug,
+      vehicleYear: verifiedVehicle.year,
+      vehicleMake: verifiedVehicle.make,
+      vehicleModel: verifiedVehicle.model,
       firstName: parsed.data.firstName,
       lastName: parsed.data.lastName,
       email: parsed.data.email,

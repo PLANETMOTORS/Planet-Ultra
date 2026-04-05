@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { resolveInventoryCanonicalPathBySlug } from '@/lib/inventory/repository';
 
 /**
  * Helper/redirect-only route: /inventory/[slug]
@@ -37,8 +38,7 @@ interface SlugParams {
  * Must return a root-relative canonical path for 308 redirect.
  */
 async function resolveCanonicalPath(_slug: string): Promise<string | null> {
-  // TODO: query Postgres for make+model by slug, then buildCanonicalVdpPath
-  return null;
+  return resolveInventoryCanonicalPathBySlug(_slug);
 }
 
 export default async function InventorySlugRedirectPage({

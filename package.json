@@ -2,12 +2,31 @@
   "name": "planet-ultra",
   "private": true,
   "version": "0.1.0",
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "node scripts/build.js",
     "start": "next start",
+    "test": "node --test tests/*.test.mjs",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "rm -rf .next && next typegen && tsc --noEmit",
+    "inventory:import:homenet": "node scripts/import-homenet-inventory.mjs",
+    "inventory:import:homenet:file": "node scripts/import-homenet-inventory.mjs",
+    "ops:proof:inventory": "node scripts/generate-inventory-ingest-evidence.mjs",
+    "ops:reconcile": "node scripts/reconcile-runtime-health.mjs",
+    "ops:proof:p0": "node scripts/generate-p0-proof-pack.mjs",
+    "ops:proof:crm": "node scripts/generate-crm-evidence.mjs",
+    "ops:alerts": "node scripts/check-ops-alerts.mjs",
+    "ops:security:check": "node scripts/security-baseline-check.mjs",
+    "ops:perf:pages": "node scripts/check-page-speed.mjs",
+    "ops:audit:site": "node scripts/audit-site-performance.mjs",
+    "ops:links:check": "node scripts/check-internal-links.mjs",
+    "ops:gate:fast-clean": "node scripts/run-fast-clean-gate.mjs",
+    "ops:debug:full": "node scripts/run-full-debug-check.mjs",
+    "ops:close:a6": "node scripts/run-a6-closeout.mjs",
+    "ops:env:a6": "node scripts/run-a6-closeout.mjs --env-only"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.0.6",

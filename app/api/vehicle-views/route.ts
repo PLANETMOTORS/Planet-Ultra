@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { recordVehicleView, getVehicleViewCount } from '@/lib/redis/vehicleViews';
+import { checkRateLimit, buildRateLimitedResponse } from '@/lib/security/rateLimit';
 
 /**
  * /api/vehicle-views
@@ -47,6 +48,14 @@ export async function POST(req: NextRequest) {
       { error: 'Invalid payload', issues: parsed.error.issues },
       { status: 400 },
     );
+  }
+  const rateDecision = await checkRateLimit(
+    req,
+    { name: 'vehicle_views_ingest', limit: 20, windowSeconds: 60 },
+    { keySuffix: parsed.data.vehicleId },
+  );
+  if (!rateDecision.allowed) {
+    return buildRateLimitedResponse(rateDecision);
   }
 
   await recordVehicleView(parsed.data.vehicleId, parsed.data.sessionToken);

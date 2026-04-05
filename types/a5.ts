@@ -46,7 +46,37 @@ export interface DepositIntentResult {
   publishableKey: string;
   vehicleId: string;
   amountCents: number;
+  checkoutUrl?: string;
+  purchaseSubmissionId?: string;
 }
+
+export type PurchaseLifecycleStatus =
+  | 'initiated'
+  | 'checkout_created'
+  | 'paid'
+  | 'expired'
+  | 'cancelled'
+  | 'return_requested'
+  | 'refund_pending'
+  | 'refunded';
+
+export type DeliveryLifecycleStatus =
+  | 'scheduled'
+  | 'confirmed'
+  | 'in_transit'
+  | 'delivered'
+  | 'failed'
+  | 'cancelled';
+
+export type TradeInLifecycleStatus =
+  | 'offered'
+  | 'accepted'
+  | 'scheduled'
+  | 'inspected'
+  | 'completed'
+  | 'declined'
+  | 'expired'
+  | 'withdrawn';
 
 // ─── Finance Submission ──────────────────────────────────────────────────────
 
@@ -87,9 +117,19 @@ export type FinanceSubmissionStatus =
 
 export interface FinanceSubmissionResult {
   status: FinanceSubmissionStatus;
+  submissionId?: string;
   referenceId?: string;
   message?: string;
 }
+
+export type FinanceLifecycleStatus =
+  | 'submitted'
+  | 'queued'
+  | 'forwarded'
+  | 'acknowledged'
+  | 'failed'
+  | 'retried'
+  | 'dead_letter';
 
 // ─── CRM / AutoRaptor ────────────────────────────────────────────────────────
 
@@ -122,6 +162,8 @@ export interface CrmDispatchResult {
   eventType: CrmEventType;
   referenceId?: string;
   error?: string;
+  attempts?: number;
+  provider?: 'autoraptor';
 }
 
 // ─── Social Proof / Vehicle Views ────────────────────────────────────────────
@@ -148,6 +190,8 @@ export type WebhookNamespace =
   | 'autoraptor'
   | 'dealertrack'
   | 'routeone'
+  | 'delivery'
+  | 'tradein'
   | 'sanity';
 
 export type WebhookStatus = 'active' | 'stub';

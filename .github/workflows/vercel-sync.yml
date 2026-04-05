@@ -2,24 +2,24 @@ name: Vercel Sync
 
 on:
   push:
-    branches: [main, trigger-vercel-deploy]
+    branches:
+      - main
+      - trigger-vercel-deploy
   workflow_dispatch:
 
 jobs:
-  no-deploy-target:
-    if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/trigger-vercel-deploy'
+  deploy-router:
     runs-on: ubuntu-latest
     steps:
-      - name: Branch has no deploy target
+      - name: Branch routing info
         run: |
-          echo "No Vercel deploy target configured for ${GITHUB_REF}."
-          echo "This is expected for feature/support branches."
-
-  deploy-preview:
-    if: github.ref == 'refs/heads/trigger-vercel-deploy'
-    runs-on: ubuntu-latest
-    steps:
+          echo "Current branch: ${GITHUB_REF}."
+          echo "Deploy branches:"
+          echo "- main -> production"
+          echo "- trigger-vercel-deploy -> preview"
+      
       - name: Trigger preview deploy hook
+        if: github.ref == 'refs/heads/trigger-vercel-deploy'
         run: |
           PREVIEW_HOOK_URL="${{ secrets.VERCEL_PREVIEW_DEPLOY_HOOK_URL }}"
           if [ -z "$PREVIEW_HOOK_URL" ]; then
@@ -30,11 +30,8 @@ jobs:
             echo "Preview deploy hook failed (non-blocking). Check hook URL/permissions in repo secrets."
           fi
 
-  deploy-production:
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
       - name: Trigger production deploy hook
+        if: github.ref == 'refs/heads/main'
         run: |
           PRODUCTION_HOOK_URL="${{ secrets.VERCEL_PRODUCTION_DEPLOY_HOOK_URL }}"
           if [ -z "$PRODUCTION_HOOK_URL" ]; then

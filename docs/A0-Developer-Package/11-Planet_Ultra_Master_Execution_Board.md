@@ -14,15 +14,15 @@ Rule: No item moves to `PASS` without linked runtime evidence.
 | P0-04 | P0 | Finance state machine + audit trail | Backend Lead | state logs for success/fail paths | IN_PROGRESS |
 | P0-05 | P0 | Stripe reconciliation loop | Payments Lead | Stripe-to-DB reconciliation report | IN_PROGRESS |
 | P0-06 | P0 | Webhook idempotency + replay safety | Backend Lead | duplicate/replay/invalid-sign tests | IN_PROGRESS |
-| P0-07 | P0 | Admin panel MVP | Fullstack Lead | inventory/finance/order ops demo + RBAC | OPEN |
-| P0-08 | P0 | Observability baseline | SRE Lead | alerts + dashboards + sample incidents | OPEN |
-| P0-09 | P0 | Security controls (WAF/rate/secrets) | Security Lead | abuse test + rotation drill evidence | OPEN |
-| P0-10 | P0 | CRM delivery receipts + retry visibility | Integrations Lead | delivery dashboard + dead-letter handling | OPEN |
+| P0-07 | P0 | Admin panel MVP | Fullstack Lead | inventory/finance/order ops demo + RBAC | IN_PROGRESS |
+| P0-08 | P0 | Observability baseline | SRE Lead | alerts + dashboards + sample incidents | IN_PROGRESS |
+| P0-09 | P0 | Security controls (WAF/rate/secrets) | Security Lead | abuse test + rotation drill evidence | IN_PROGRESS |
+| P0-10 | P0 | CRM delivery receipts + retry visibility | Integrations Lead | delivery dashboard + dead-letter handling | IN_PROGRESS |
 | P0-11 | P0 | Data correctness (totals/tax/order invariants) | Backend Lead | zero critical mismatches report | IN_PROGRESS |
 | P0-12 | P0 | Gate discipline (proof-only closure) | PM + Eng Lead | BlueSheet + Gate Tracker links | IN_PROGRESS |
-| P0-13 | P0 | Trade-in end-to-end | Product Eng Lead | offer/accept/inspect/complete proof | OPEN |
-| P0-14 | P0 | Delivery lifecycle end-to-end | Ops + Backend | slot/tracking/status proofs | OPEN |
-| P0-15 | P0 | 10-day return/refund workflow | Payments + Ops | return + refund settlement evidence | OPEN |
+| P0-13 | P0 | Trade-in end-to-end | Product Eng Lead | offer/accept/inspect/complete proof | IN_PROGRESS |
+| P0-14 | P0 | Delivery lifecycle end-to-end | Ops + Backend | slot/tracking/status proofs | IN_PROGRESS |
+| P0-15 | P0 | 10-day return/refund workflow | Payments + Ops | return + refund settlement evidence | IN_PROGRESS |
 | P1-16 | P1 | Saved searches + alerts | Frontend + Backend | create/update/notify proof | OPEN |
 | P1-17 | P1 | Event contract registry + taxonomy | Platform Lead | versioned schemas + compatibility tests | OPEN |
 | P1-18 | P1 | Data retention/deletion automation | Compliance Eng | SAR/delete run evidence | OPEN |
@@ -66,6 +66,77 @@ Rule: No item moves to `PASS` without linked runtime evidence.
 2. Progress P0-01 to minimum 16/25 conversion pages.
 3. Deliver first ingest reconciliation report for P0-02.
 4. Publish initial observability alerts for P0-08.
+
+## Applied Add-Ons (March 30, 2026)
+- A6 backend execution branch created: `codex/a6-backend-p0-inventory-dealertrack`.
+- P0-02 implementation baseline added:
+  - `db/migrations/002_inventory_feed_snapshot.sql`
+  - `scripts/import-homenet-inventory.mjs`
+  - `lib/inventory/repository.ts`
+- Runtime wiring started:
+  - `/inventory` now reads live snapshot rows.
+  - `/inventory/[slug]` now resolves canonical VDP from inventory snapshot.
+  - `/inventory/used/[make]/[model]/[slug]` now reads DB by slug (fixture removed).
+- Inventory rule locked:
+  - Every HomeNet import is full-replace (`TRUNCATE + INSERT`).
+  - Previous inventory rows are not retained in `inventory_vehicles`.
+- P0-15 lifecycle baseline added:
+  - `db/migrations/006_purchase_lifecycle.sql`
+  - `lib/purchase/lifecycleStore.ts`
+  - `/api/purchase/submit` now persists lifecycle + Stripe session mapping
+  - `/api/webhooks/stripe` now updates paid/expired/refunded states in lifecycle store
+  - `/api/purchase/return` added for 10-day return request initiation
+- P0-14 lifecycle baseline added:
+  - `db/migrations/007_delivery_lifecycle.sql`
+  - `lib/delivery/lifecycleStore.ts`
+  - `/api/purchase/delivery` added for customer scheduling + status retrieval
+  - `/api/webhooks/delivery` added for provider status updates (`scheduled/confirmed/in_transit/delivered/failed/cancelled`)
+- P0-13 lifecycle baseline added:
+  - `db/migrations/008_tradein_lifecycle.sql`
+  - `lib/tradein/lifecycleStore.ts`
+  - `/api/trade-in/offer`, `/api/trade-in/accept`, `/api/trade-in/status` added
+  - `/api/webhooks/tradein` added for inspected/completed terminal provider updates
+  - `/sell-or-trade` route created (was previously linked but missing)
+- P0-05/P0-06 evidence hardening baseline added:
+  - `scripts/reconcile-runtime-health.mjs` now validates purchase/delivery/trade-in lifecycle invariants
+  - `lib/ops/metrics.ts` now exposes purchase/delivery/trade-in operational counters
+  - Added regression tests for ops evidence wiring
+- P0 proof-pack automation baseline added:
+  - `db/migrations/009_webhook_replay_attempts.sql`
+  - `lib/webhooks/eventStore.ts` now logs duplicate webhook replays (best-effort ledger)
+  - `scripts/generate-p0-proof-pack.mjs` for P0-03/P0-04/P0-05/P0-06 evidence snapshots
+  - `npm run ops:proof:p0 [output-path]` available for audit exports
+- P0-07 admin MVP baseline added:
+  - `/admin` protected route with allowlist auth (`ADMIN_CLERK_USER_IDS`)
+  - `/api/admin/ops` admin-only operational snapshot endpoint
+  - `lib/ops/adminSnapshot.ts` read-only dashboard data source (finance/webhooks/CRM recent rows)
+- Full A0-to-current debug tooling baseline added:
+  - `npm run ops:debug:full` verifies A0 package/docs/routes/migrations + quality/build gates
+  - Ops evidence scripts now support safe `NO_DATABASE` mode (unless `--require-db` is set)
+
+## Execution Update (April 2, 2026)
+- Full quality gate rerun completed:
+  - `npm run ops:debug:full` => PASS
+  - tests `52/52` => PASS
+  - `lint/typecheck/build` => PASS
+- P0 proof scripts executed successfully in local safe mode:
+  - `npm run ops:reconcile` => `NO_DATABASE`
+  - `npm run ops:proof:p0` => `NO_DATABASE`
+- Closure posture:
+  - Items with proven runtime evidence remain eligible for `PASS`.
+  - Items requiring live provider/DB evidence remain `IN_PROGRESS` until dependency proof is attached.
+- Observability + security closeout tooling added:
+  - `scripts/check-ops-alerts.mjs` (`npm run ops:alerts`) for threshold-based alert snapshots.
+  - `scripts/security-baseline-check.mjs` (`npm run ops:security:check`) for secret/config posture checks.
+  - `scripts/run-a6-closeout.mjs` now includes alerts + security gates in the A6 closeout verdict.
+- CRM evidence closeout tooling added:
+  - `scripts/generate-crm-evidence.mjs` (`npm run ops:proof:crm`) for receipt/retry/dead-letter evidence.
+  - `scripts/run-a6-closeout.mjs` now includes CRM evidence gate in the A6 closeout verdict.
+- Inventory ingest reliability + evidence tooling added:
+  - `db/migrations/010_inventory_import_runs.sql` for import run ledger + dead letters.
+  - `scripts/import-homenet-inventory.mjs` now records retries, skipped rows, and dead-letter entries.
+  - `scripts/generate-inventory-ingest-evidence.mjs` (`npm run ops:proof:inventory`) for P0-02 evidence.
+  - `scripts/run-a6-closeout.mjs` now includes inventory evidence gate in the A6 closeout verdict.
 
 ## Non-Negotiable Rules
 - One workstream per branch/PR.

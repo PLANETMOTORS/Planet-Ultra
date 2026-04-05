@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { parseVehicleCtaContext } from '@/lib/cta/context';
+import FinanceLeadForm from '@/components/finance/FinanceLeadForm';
 
 /**
  * /finance — public. Server Component.
@@ -27,52 +29,111 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
 
   return (
     <main>
-      <div className="container section">
-        <h1>Apply for Financing</h1>
-
-        {ctx && (
-          <div className="card" style={{ marginBottom: '24px' }}>
-            <p className="eyebrow">Financing for</p>
-            <h2>
-              {ctx.vehicleYear} {ctx.vehicleMake} {ctx.vehicleModel}
-            </h2>
-            <p className="muted">
-              Listed at ${ctx.vehiclePriceCad.toLocaleString('en-CA')}
-            </p>
+      <header className="topbar">
+        <div className="container topbar-inner">
+          <div className="brand">
+            <Link href="/">Planet Motors</Link>
           </div>
-        )}
-
-        <div className="card">
-          <p className="muted" style={{ marginBottom: '16px' }}>
-            Complete the form below and our finance team will contact you within
-            one business day. Your application is submitted securely — your
-            information is never stored on our servers.
-          </p>
-
-          {/*
-            Finance form shell.
-            The form action POSTs to /api/finance/submit (server Route Handler).
-            Vehicle context is passed as hidden fields — pre-populated from
-            server-resolved params, not from client state.
-            UI implementation (inputs, labels, validation) is an A3 shell concern.
-          */}
-          <form action="/api/finance/submit" method="POST">
-            {ctx && (
-              <>
-                <input type="hidden" name="vehicleId" value={ctx.vehicleId} />
-                <input type="hidden" name="vehicleSlug" value={ctx.vehicleSlug} />
-                <input type="hidden" name="vehicleYear" value={ctx.vehicleYear} />
-                <input type="hidden" name="vehicleMake" value={ctx.vehicleMake} />
-                <input type="hidden" name="vehicleModel" value={ctx.vehicleModel} />
-                <input type="hidden" name="vehiclePriceCad" value={ctx.vehiclePriceCad} />
-              </>
-            )}
-            <p className="muted">
-              Finance application form inputs — to be wired in A3 shell integration.
-            </p>
-          </form>
+          <nav className="nav" aria-label="Primary navigation">
+            <Link href="/inventory">Shop Inventory</Link>
+            <a href="/sell-or-trade">Sell or Trade</a>
+            <Link href="/finance" aria-current="page">
+              Finance
+            </Link>
+            <a href="/protection">Protection</a>
+          </nav>
         </div>
-      </div>
+      </header>
+
+      <section className="section finance-flow">
+        <div className="container">
+          <div className="flow-hero">
+            <div>
+              <p className="eyebrow">Finance Application</p>
+              <h1>Apply for Financing</h1>
+              <p className="muted">
+                Fast online application with lender relay-ready backend. Our team follows up within
+                one business day.
+              </p>
+            </div>
+            <div className="flow-hero-kpis">
+              <article>
+                <strong>5 min</strong>
+                <span>Average application time</span>
+              </article>
+              <article>
+                <strong>Secure</strong>
+                <span>Server-side validation + rate limits</span>
+              </article>
+              <article>
+                <strong>Live</strong>
+                <span>Dealertrack/RouteOne lifecycle wiring</span>
+              </article>
+            </div>
+          </div>
+
+          {ctx && (
+            <article className="flow-context-card">
+              <p className="eyebrow">Financing for</p>
+              <h2>
+                {ctx.vehicleYear} {ctx.vehicleMake} {ctx.vehicleModel}
+              </h2>
+              <p className="muted">
+                Listed at ${ctx.vehiclePriceCad.toLocaleString('en-CA')}
+              </p>
+            </article>
+          )}
+
+          <div className="flow-grid">
+            {ctx ? (
+              <FinanceLeadForm
+                vehicleId={ctx.vehicleId}
+                vehicleSlug={ctx.vehicleSlug}
+                vehicleLabel={`${ctx.vehicleYear} ${ctx.vehicleMake} ${ctx.vehicleModel}`}
+                vehiclePriceCad={ctx.vehiclePriceCad}
+              />
+            ) : (
+              <article className="flow-card">
+                <h2>Select a Vehicle First</h2>
+                <p className="muted">
+                  Finance submissions require a vehicle reference. Please start from an inventory
+                  vehicle detail page so the application is tied to the correct unit.
+                </p>
+                <Link className="button button-primary" href="/inventory">
+                  Choose Vehicle
+                </Link>
+              </article>
+            )}
+
+            <aside className="flow-card flow-steps">
+              <h3>What Happens Next</h3>
+              <ol>
+                <li>Application is validated at server boundary.</li>
+                <li>Vehicle facts are resolved from live inventory source of truth.</li>
+                <li>Lead is queued and dispatched to lender/CRM pipeline.</li>
+                <li>Team follows up with options and next steps.</li>
+              </ol>
+              <Link className="button button-secondary" href="/inventory">
+                Back to Inventory
+              </Link>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <footer className="footer">
+        <div className="container footer-inner">
+          <div>
+            <strong>Planet Motors</strong>
+            <p className="muted">Finance conversion flow shell with runtime-safe boundaries.</p>
+          </div>
+          <div className="footer-links">
+            <Link href="/inventory">Inventory</Link>
+            <a href="/sell-or-trade">Sell or Trade</a>
+            <Link href="/finance">Finance</Link>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }

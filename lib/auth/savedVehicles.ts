@@ -13,8 +13,9 @@
  * a separate params array, making it harder to compose safely.
  */
 
-import { neon, type NeonQueryFunction } from '@neondatabase/serverless';
+import type { NeonQueryFunction } from '@neondatabase/serverless';
 import type { SavedVehicleRecord } from '@/types/a5';
+import { getDatabaseSql } from '@/lib/db/sql';
 
 type Sql = NeonQueryFunction<false, false>;
 
@@ -23,9 +24,7 @@ type Sql = NeonQueryFunction<false, false>;
  * All callers must handle the null case gracefully.
  */
 function getSql(): Sql | null {
-  const url = process.env.DATABASE_URL;
-  if (!url) return null;
-  return neon(url);
+  return getDatabaseSql();
 }
 
 /**

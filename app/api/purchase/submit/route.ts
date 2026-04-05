@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import { createDepositSession } from '@/lib/stripe/depositIntent';
-import { dispatchCrmEvent, buildDepositEvent } from '@/lib/crm/autoraptor';
+import { dispatchCrmEventWithReceipt, buildDepositEvent } from '@/lib/crm/autoraptor';
+import { checkRateLimit, buildRateLimitedResponse } from '@/lib/security/rateLimit';
+import { getInventoryVehicleByReference } from '@/lib/inventory/repository';
+import {
+  createPurchaseSubmission,
+  markPurchaseCheckoutCreated,
+} from '@/lib/purchase/lifecycleStore';
 
 /**
  * POST /api/purchase/submit
@@ -13,8 +19,9 @@ import { dispatchCrmEvent, buildDepositEvent } from '@/lib/crm/autoraptor';
  * - Requires Clerk auth. Unauthenticated → 401.
  * - clerkUserId is resolved server-side from the session. It is NOT read
  *   from the client payload.
- * - Vehicle price is passed in for metadata/display only — the actual
- *   deposit amount is controlled by STRIPE_DEPOSIT_AMOUNT_CENTS env var.
+ * - Vehicle facts (year/make/model/price) are resolved from inventory DB.
+ *   Client-supplied values are not used as source-of-truth.
+ * - Actual deposit amount is controlled by STRIPE_DEPOSIT_AMOUNT_CENTS env var.
  * - No Stripe secret key is ever exposed to the browser.
  * - Returns a Stripe Checkout session ID for client redirect.
  */
@@ -22,10 +29,6 @@ import { dispatchCrmEvent, buildDepositEvent } from '@/lib/crm/autoraptor';
 const PurchaseSubmitSchema = z.object({
   vehicleId: z.string().min(1).max(255),
   vehicleSlug: z.string().min(1).max(500),
-  vehicleMake: z.string().min(1).max(100),
-  vehicleModel: z.string().min(1).max(100),
-  vehicleYear: z.number().int().min(1900).max(2100),
-  vehiclePriceCad: z.number().positive(),
 });
 
 export async function POST(req: NextRequest) {
@@ -33,6 +36,14 @@ export async function POST(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const rateDecision = await checkRateLimit(
+    req,
+    { name: 'purchase_submit', limit: 5, windowSeconds: 60 },
+    { userId },
+  );
+  if (!rateDecision.allowed) {
+    return buildRateLimitedResponse(rateDecision);
   }
 
   let body: unknown;
@@ -50,26 +61,63 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const verifiedVehicle = await getInventoryVehicleByReference(
+    parsed.data.vehicleId,
+    parsed.data.vehicleSlug,
+  );
+  if (!verifiedVehicle || verifiedVehicle.status !== 'available') {
+    return NextResponse.json(
+      { error: 'Vehicle unavailable or reference mismatch' },
+      { status: 409 },
+    );
+  }
+
   try {
     const result = await createDepositSession({
-      ...parsed.data,
+      vehicleId: verifiedVehicle.id,
+      vehicleSlug: verifiedVehicle.slug,
+      vehicleMake: verifiedVehicle.make,
+      vehicleModel: verifiedVehicle.model,
+      vehicleYear: verifiedVehicle.year,
+      vehiclePriceCad: verifiedVehicle.priceCad,
       clerkUserId: userId,
     });
 
-    // Dispatch CRM deposit event — fire-and-forget, non-blocking
-    dispatchCrmEvent(buildDepositEvent({
-      vehicleId: parsed.data.vehicleId,
-      vehicleSlug: parsed.data.vehicleSlug,
-      vehicleYear: parsed.data.vehicleYear,
-      vehicleMake: parsed.data.vehicleMake,
-      vehicleModel: parsed.data.vehicleModel,
+    const purchaseSubmissionId = await createPurchaseSubmission({
       clerkUserId: userId,
-      meta: { sessionId: result.sessionId, amountCents: result.amountCents },
+      vehicleId: verifiedVehicle.id,
+      vehicleSlug: verifiedVehicle.slug,
+      amountCents: result.amountCents,
+      metadata: { source: 'api.purchase.submit' },
+    });
+    if (purchaseSubmissionId) {
+      await markPurchaseCheckoutCreated({
+        submissionId: purchaseSubmissionId,
+        stripeSessionId: result.sessionId,
+      });
+    }
+
+    // Dispatch CRM deposit event — fire-and-forget, non-blocking
+    dispatchCrmEventWithReceipt('api.purchase.submit', buildDepositEvent({
+      vehicleId: verifiedVehicle.id,
+      vehicleSlug: verifiedVehicle.slug,
+      vehicleYear: verifiedVehicle.year,
+      vehicleMake: verifiedVehicle.make,
+      vehicleModel: verifiedVehicle.model,
+      clerkUserId: userId,
+      meta: {
+        sessionId: result.sessionId,
+        amountCents: result.amountCents,
+        purchaseSubmissionId: purchaseSubmissionId ?? 'untracked',
+      },
     })).catch((err) => {
       console.error('[api/purchase/submit] CRM dispatch error:', (err as Error).message);
     });
 
-    return NextResponse.json(result, { status: 200 });
+    return NextResponse.json(
+      { ...result, purchaseSubmissionId: purchaseSubmissionId ?? undefined },
+      { status: 200 },
+    );
   } catch (err) {
     console.error('[api/purchase/submit] Error creating deposit session:', err);
     return NextResponse.json(
