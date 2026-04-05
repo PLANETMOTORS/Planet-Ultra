@@ -9,7 +9,7 @@
  */
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
-const THRESHOLD_MS = Number(process.env.PAGE_SPEED_THRESHOLD_MS || '200');
+const THRESHOLD_MS = Number(process.env.PAGE_SPEED_THRESHOLD_MS || '150');
 const ATTEMPTS = Number(process.env.PAGE_SPEED_ATTEMPTS || '3');
 
 const routes = [

@@ -4,7 +4,7 @@ import { spawn } from 'node:child_process';
 
 const PORT = Number(process.env.PORT || '4012');
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
-const THRESHOLD_MS = process.env.PAGE_SPEED_THRESHOLD_MS || '200';
+const THRESHOLD_MS = process.env.PAGE_SPEED_THRESHOLD_MS || '150';
 const ATTEMPTS = process.env.PAGE_SPEED_ATTEMPTS || '3';
 
 const QUALITY_STEPS = [

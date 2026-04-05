@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { parseVehicleCtaContext } from '@/lib/cta/context';
-import ProtectionQuoteForm from '@/components/protection/ProtectionQuoteForm';
+import { Suspense } from 'react';
+import ProtectionRuntimePanel from '@/components/protection/ProtectionRuntimePanel';
 
 /**
  * /protection — public shell. Server Component.
@@ -9,7 +9,6 @@ import ProtectionQuoteForm from '@/components/protection/ProtectionQuoteForm';
  * F&I protection products (extended warranty, GAP, etc.).
  * Quote requests go to /api/protection/quote (stub in current phase).
  */
-export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Vehicle Protection',
@@ -18,14 +17,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/protection' },
 };
 
-interface ProtectionPageProps {
-  searchParams: Promise<Record<string, string>>;
-}
-
-export default async function ProtectionPage({ searchParams }: ProtectionPageProps) {
-  const params = await searchParams;
-  const ctx = parseVehicleCtaContext(params);
-
+export default function ProtectionPage() {
   return (
     <main>
       <header className="topbar">
@@ -71,15 +63,6 @@ export default async function ProtectionPage({ searchParams }: ProtectionPagePro
             </div>
           </div>
 
-          {ctx && (
-            <article className="flow-context-card">
-              <p className="eyebrow">Protection for</p>
-              <h2>
-                {ctx.vehicleYear} {ctx.vehicleMake} {ctx.vehicleModel}
-              </h2>
-            </article>
-          )}
-
           <div className="protection-grid">
             <article className="protection-plan-card">
               <h3>Essential</h3>
@@ -112,40 +95,16 @@ export default async function ProtectionPage({ searchParams }: ProtectionPagePro
             </article>
           </div>
 
-          {ctx ? (
-            <div className="flow-grid">
-              <ProtectionQuoteForm
-                vehicleId={ctx.vehicleId}
-                vehicleYear={ctx.vehicleYear}
-                vehicleMake={ctx.vehicleMake}
-                vehicleModel={ctx.vehicleModel}
-                vehiclePriceCad={ctx.vehiclePriceCad}
-              />
-              <aside className="flow-card flow-steps">
-                <h3>Quote Sequence</h3>
-                <ol>
-                  <li>Select plan level and current mileage.</li>
-                  <li>Submit request through protected server boundary.</li>
-                  <li>Review quote output for plan comparison.</li>
-                  <li>Finalize during purchase and finance handoff.</li>
-                </ol>
-                <Link className="button button-secondary" href="/inventory">
-                  Back to Inventory
-                </Link>
-              </aside>
-            </div>
-          ) : (
-            <article className="flow-card">
-              <h2>Select a Vehicle for Quote</h2>
-              <p className="muted">
-                Protection quote requires vehicle context. Open a vehicle detail page and use the
-                protection CTA to prefill this flow.
-              </p>
-              <Link className="button button-primary" href="/inventory">
-                Choose Vehicle
-              </Link>
-            </article>
-          )}
+          <Suspense
+            fallback={
+              <article className="flow-card">
+                <h2>Loading Protection Context...</h2>
+                <p className="muted">Preparing your quote flow.</p>
+              </article>
+            }
+          >
+            <ProtectionRuntimePanel />
+          </Suspense>
         </div>
       </section>
 
