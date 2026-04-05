@@ -1,5 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
+import type { NextFetchEvent, NextRequest } from 'next/server';
+import { hasValidClerkPublishableKey } from '@/lib/auth/clerkConfig';
 
 /**
  * Routes that require a signed-in Clerk session.
@@ -29,16 +31,18 @@ const isProtectedRoute = createRouteMatcher([
 ]);
 
 const SIGN_IN_URL = process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL ?? '/sign-in';
-const CLERK_KEY = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const CLERK_KEY = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? '';
+const CLERK_ENABLED = hasValidClerkPublishableKey(CLERK_KEY);
 
-export default clerkMiddleware(async (auth, req) => {
-  if (!CLERK_KEY) {
-    // Clerk not yet provisioned — allow all routes through without auth.
-    // Set NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY in Vercel to activate auth.
-    return NextResponse.next();
-  }
+function denyProtectedWithoutClerk(req: NextRequest) {
+  if (!isProtectedRoute(req)) return NextResponse.next();
+  const signInUrl = new URL(SIGN_IN_URL, req.url);
+  signInUrl.searchParams.set('redirect_url', req.url);
+  return NextResponse.redirect(signInUrl);
+}
 
-  if (!isProtectedRoute(req)) return;
+const clerkGuard = clerkMiddleware(async (auth, req) => {
+  if (!isProtectedRoute(req)) return NextResponse.next();
 
   const { userId } = await auth();
   if (!userId) {
@@ -46,7 +50,15 @@ export default clerkMiddleware(async (auth, req) => {
     signInUrl.searchParams.set('redirect_url', req.url);
     return NextResponse.redirect(signInUrl);
   }
+  return NextResponse.next();
 });
+
+export default function middleware(req: NextRequest, event: NextFetchEvent) {
+  if (!CLERK_ENABLED) {
+    return denyProtectedWithoutClerk(req);
+  }
+  return clerkGuard(req, event);
+}
 
 export const config = {
   matcher: [
