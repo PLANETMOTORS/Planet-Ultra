@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { submitFinanceApplication } from '@/lib/finance/submissionBoundary';
 import { dispatchCrmEventWithReceipt, buildFinanceLeadEvent } from '@/lib/crm/autoraptor';
 import { checkRateLimit, buildRateLimitedResponse } from '@/lib/security/rateLimit';
+import { apiError, apiInternalError } from '@/lib/security/apiError';
 import { getInventoryVehicleByReference } from '@/lib/inventory/repository';
 import type { FinanceApplicationPayload } from '@/types/a5';
 
@@ -55,15 +56,12 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    return apiError(400, 'INVALID_JSON', 'Request body must be valid JSON');
   }
 
   const parsed = FinanceSubmitSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: 'Invalid payload', issues: parsed.error.issues },
-      { status: 400 },
-    );
+    return apiError(400, 'VALIDATION_FAILED', 'Invalid request payload');
   }
 
   const verifiedVehicle = await getInventoryVehicleByReference(
@@ -71,10 +69,7 @@ export async function POST(req: NextRequest) {
     parsed.data.vehicleSlug,
   );
   if (!verifiedVehicle || verifiedVehicle.status === 'sold') {
-    return NextResponse.json(
-      { error: 'Vehicle unavailable or reference mismatch' },
-      { status: 409 },
-    );
+    return apiError(409, 'VEHICLE_UNAVAILABLE', 'Vehicle is unavailable or reference mismatch');
   }
 
   const payload: FinanceApplicationPayload = {
@@ -117,10 +112,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(result, { status: statusCode });
   } catch (err) {
-    console.error('[api/finance/submit] Unexpected error:', err);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 },
-    );
+    return apiInternalError('api/finance/submit', err);
   }
 }

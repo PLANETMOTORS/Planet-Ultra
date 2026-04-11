@@ -4,6 +4,8 @@ import { z } from 'zod';
 import { createDepositSession } from '@/lib/stripe/depositIntent';
 import { dispatchCrmEventWithReceipt, buildDepositEvent } from '@/lib/crm/autoraptor';
 import { checkRateLimit, buildRateLimitedResponse } from '@/lib/security/rateLimit';
+import { apiError, apiInternalError } from '@/lib/security/apiError';
+import { writeAuditLog } from '@/lib/security/auditLog';
 import { getInventoryVehicleByReference } from '@/lib/inventory/repository';
 import {
   createPurchaseSubmission,
@@ -35,7 +37,7 @@ export async function POST(req: NextRequest) {
   // Auth check — clerkUserId resolved server-side only
   const { userId } = await auth();
   if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return apiError(401, 'UNAUTHORIZED', 'Authentication required');
   }
   const rateDecision = await checkRateLimit(
     req,
@@ -50,15 +52,12 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    return apiError(400, 'INVALID_JSON', 'Request body must be valid JSON');
   }
 
   const parsed = PurchaseSubmitSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: 'Invalid payload', issues: parsed.error.issues },
-      { status: 400 },
-    );
+    return apiError(400, 'VALIDATION_FAILED', 'Invalid request payload');
   }
 
   const verifiedVehicle = await getInventoryVehicleByReference(
@@ -66,10 +65,7 @@ export async function POST(req: NextRequest) {
     parsed.data.vehicleSlug,
   );
   if (!verifiedVehicle || verifiedVehicle.status !== 'available') {
-    return NextResponse.json(
-      { error: 'Vehicle unavailable or reference mismatch' },
-      { status: 409 },
-    );
+    return apiError(409, 'VEHICLE_UNAVAILABLE', 'Vehicle is unavailable or reference mismatch');
   }
 
   try {
@@ -114,15 +110,26 @@ export async function POST(req: NextRequest) {
       console.error('[api/purchase/submit] CRM dispatch error:', (err as Error).message);
     });
 
+    // PCI audit: log deposit initiation with non-sensitive identifiers only
+    writeAuditLog({
+      actor: userId,
+      action: 'deposit.initiated',
+      resource: verifiedVehicle.id,
+      metadata: {
+        vehicleSlug: verifiedVehicle.slug,
+        amountCents: result.amountCents,
+        stripeSessionId: result.sessionId,
+        purchaseSubmissionId: purchaseSubmissionId ?? 'untracked',
+      },
+    }).catch(() => {
+      // fire-and-forget — audit must never block the response
+    });
+
     return NextResponse.json(
       { ...result, purchaseSubmissionId: purchaseSubmissionId ?? undefined },
       { status: 200 },
     );
   } catch (err) {
-    console.error('[api/purchase/submit] Error creating deposit session:', err);
-    return NextResponse.json(
-      { error: 'Failed to create deposit session' },
-      { status: 500 },
-    );
+    return apiInternalError('api/purchase/submit', err);
   }
 }

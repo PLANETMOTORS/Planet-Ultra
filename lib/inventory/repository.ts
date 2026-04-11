@@ -2,6 +2,11 @@ import type { NeonQueryFunction } from '@neondatabase/serverless';
 import type { Vehicle, VehicleStatus } from '@/types/vehicle';
 import { buildCanonicalVdpPath } from '@/lib/seo/urlUtils';
 import { getDatabaseSql } from '@/lib/db/sql';
+import { getOmvicAllInPriceCad } from '@/lib/inventory/pricingValidation';
+import {
+  getCachedInventoryCards,
+  setCachedInventoryCards,
+} from '@/lib/redis/inventoryCache';
 
 type Sql = NeonQueryFunction<false, false>;
 
@@ -40,6 +45,11 @@ function toVehicleStatus(value: string | null): VehicleStatus {
 }
 
 function rowToVehicle(row: InventoryVehicleRow): Vehicle {
+  // OMVIC compliance: all displayed prices must include mandatory fees.
+  // If validation fails, priceCad falls back to 0 (price hidden in UI).
+  const rawPrice = row.selling_price_cad ?? 0;
+  const omvicPrice = getOmvicAllInPriceCad(rawPrice);
+
   return {
     id: row.vin,
     slug: row.slug,
@@ -56,7 +66,7 @@ function rowToVehicle(row: InventoryVehicleRow): Vehicle {
     mileageKm: row.mileage_km ?? 0,
     exteriorColor: row.exterior_color ?? undefined,
     interiorColor: row.interior_color ?? undefined,
-    priceCad: row.selling_price_cad ?? 0,
+    priceCad: omvicPrice ?? 0,
     status: toVehicleStatus(row.status),
     heroImage: {
       url: FALLBACK_HERO_IMAGE_URL,
@@ -74,6 +84,10 @@ export interface InventoryCardRecord {
 }
 
 export async function getInventoryCards(limit = 60): Promise<InventoryCardRecord[]> {
+  // Check Redis cache first — avoids a Postgres round-trip on cache hit
+  const cached = await getCachedInventoryCards<InventoryCardRecord>(limit);
+  if (cached) return cached;
+
   const sql = getSql();
   if (!sql) return [];
 
@@ -90,13 +104,20 @@ export async function getInventoryCards(limit = 60): Promise<InventoryCardRecord
       [limit],
     )) as InventoryVehicleRow[];
 
-    return rows.map((row) => {
+    const cards = rows.map((row) => {
       const vehicle = rowToVehicle(row);
       return {
         vehicle,
         canonicalPath: buildCanonicalVdpPath(vehicle.make, vehicle.model, vehicle.slug),
       };
     });
+
+    // Populate cache for subsequent requests (5-minute TTL)
+    setCachedInventoryCards(limit, cards).catch(() => {
+      // Cache write failure is non-fatal
+    });
+
+    return cards;
   } catch (error) {
     // Handle case where table doesn't exist yet (e.g., during initial build)
     // PostgreSQL error code 42P01 = undefined_table

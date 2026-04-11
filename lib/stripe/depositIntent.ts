@@ -9,6 +9,9 @@
  *   runs in this layer.
  * - The Stripe Checkout Session is created server-side and only the session ID
  *   is returned to the client for redirect.
+ * - An idempotency key is derived from (vehicleId + clerkUserId + 5-minute
+ *   time bucket) so that double-clicks or retries within the same window
+ *   return the same Checkout Session instead of creating duplicates.
  */
 
 import type { DepositIntentRequest, DepositIntentResult } from '@/types/a5';
@@ -59,29 +62,37 @@ export async function createDepositSession(
     request.vehicleMake.toLowerCase(),
   )}/${encodeURIComponent(request.vehicleModel.toLowerCase())}/${request.vehicleSlug}`;
 
-  const session = await stripe.checkout.sessions.create({
-    mode: 'payment',
-    line_items: [
-      {
-        price_data: {
-          currency: 'cad',
-          product_data: {
-            name: `${request.vehicleYear} ${request.vehicleMake} ${request.vehicleModel} — Deposit`,
-            description: `Refundable deposit to hold vehicle ${request.vehicleSlug}`,
+  // 5-minute time bucket prevents duplicate sessions from double-clicks/retries
+  // while still allowing a fresh session if the user returns later.
+  const timeBucket = Math.floor(Date.now() / (5 * 60 * 1000));
+  const idempotencyKey = `deposit:${request.vehicleId}:${request.clerkUserId}:${timeBucket}`;
+
+  const session = await stripe.checkout.sessions.create(
+    {
+      mode: 'payment',
+      line_items: [
+        {
+          price_data: {
+            currency: 'cad',
+            product_data: {
+              name: `${request.vehicleYear} ${request.vehicleMake} ${request.vehicleModel} — Deposit`,
+              description: `Refundable deposit to hold vehicle ${request.vehicleSlug}`,
+            },
+            unit_amount: DEPOSIT_AMOUNT_CENTS,
           },
-          unit_amount: DEPOSIT_AMOUNT_CENTS,
+          quantity: 1,
         },
-        quantity: 1,
+      ],
+      metadata: {
+        vehicleId: request.vehicleId,
+        vehicleSlug: request.vehicleSlug,
+        clerkUserId: request.clerkUserId,
       },
-    ],
-    metadata: {
-      vehicleId: request.vehicleId,
-      vehicleSlug: request.vehicleSlug,
-      clerkUserId: request.clerkUserId,
+      success_url: `${canonicalVdpUrl}?deposit=success`,
+      cancel_url: `${canonicalVdpUrl}?deposit=cancelled`,
     },
-    success_url: `${canonicalVdpUrl}?deposit=success`,
-    cancel_url: `${canonicalVdpUrl}?deposit=cancelled`,
-  });
+    { idempotencyKey },
+  );
 
   return {
     sessionId: session.id,

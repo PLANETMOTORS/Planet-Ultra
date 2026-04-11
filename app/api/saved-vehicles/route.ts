@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import { saveVehicle, unsaveVehicle, isVehicleSaved } from '@/lib/auth/savedVehicles';
 import { checkRateLimit, buildRateLimitedResponse } from '@/lib/security/rateLimit';
+import { apiError } from '@/lib/security/apiError';
 
 /**
  * /api/saved-vehicles
@@ -21,12 +22,12 @@ const SavePayload = z.object({
 export async function GET(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return apiError(401, 'UNAUTHORIZED', 'Authentication required');
   }
 
   const vehicleId = req.nextUrl.searchParams.get('vehicleId');
   if (!vehicleId) {
-    return NextResponse.json({ error: 'vehicleId required' }, { status: 400 });
+    return apiError(400, 'MISSING_PARAM', 'vehicleId is required');
   }
 
   const saved = await isVehicleSaved(userId, vehicleId);
@@ -37,7 +38,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return apiError(401, 'UNAUTHORIZED', 'Authentication required');
   }
   const rateDecision = await checkRateLimit(
     req,
@@ -52,20 +53,17 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    return apiError(400, 'INVALID_JSON', 'Request body must be valid JSON');
   }
 
   const parsed = SavePayload.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: 'Invalid payload', issues: parsed.error.issues },
-      { status: 400 },
-    );
+    return apiError(400, 'VALIDATION_FAILED', 'Invalid request payload');
   }
 
   const result = await saveVehicle(userId, parsed.data.vehicleId, parsed.data.vehicleSlug);
   if (!result.ok) {
-    return NextResponse.json({ error: 'Save failed' }, { status: 500 });
+    return apiError(500, 'SAVE_FAILED', 'Failed to save vehicle', { retryable: true });
   }
 
   return NextResponse.json({ saved: true }, { status: 201 });
@@ -75,7 +73,7 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return apiError(401, 'UNAUTHORIZED', 'Authentication required');
   }
   const rateDecision = await checkRateLimit(
     req,
@@ -88,12 +86,12 @@ export async function DELETE(req: NextRequest) {
 
   const vehicleId = req.nextUrl.searchParams.get('vehicleId');
   if (!vehicleId) {
-    return NextResponse.json({ error: 'vehicleId required' }, { status: 400 });
+    return apiError(400, 'MISSING_PARAM', 'vehicleId is required');
   }
 
   const result = await unsaveVehicle(userId, vehicleId);
   if (!result.ok) {
-    return NextResponse.json({ error: 'Unsave failed' }, { status: 500 });
+    return apiError(500, 'UNSAVE_FAILED', 'Failed to remove saved vehicle', { retryable: true });
   }
 
   return NextResponse.json({ saved: false });
